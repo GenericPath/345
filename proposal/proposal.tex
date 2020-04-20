@@ -14,20 +14,27 @@
 \begin{document}
 	\maketitle
 	
-	We plan to build an Android app that allows the user to download / view course material from the COSC website \url{cs.otago.ac.nz}, and potentially, the MATH/STAT department website (\url{maths.otago.ac.nz})
+	We are building an android app to display university course material. This will be targeted towards displaying content from cs.otago.ac.nz primarily. It will provide an easy to view format of each paper for mobile devices. Information will be pulled from the websites themselves and formatted.
 	
-	We intend to use Kotlin and target Android API level 28 (Android version 9, released August 6, 2018), however this target is very easy to change, as we don't expect to be using any very modern Android features. The app itself will work typically by guessing the correct page (e.g. \url{cs.otago.ac.nz/cosc345/lectures.php}) and enumerating PDFs, or by enumerating sub-pages of e.g. \url{cs.otago.ac.nz/cosc345}
-	
-	Main risk is the format changing. Consider the \url{cs.otago.ac.nz/cosc345/lectures.php} example, it is very possible that (intentionally or not) for some paper it might have another name. A real world example of this is \url{mark326@cs.otago.ac.nz} and \url{marks243@cs.otago.ac.nz}
-	
-	It will take ??? to build.
+	Our team consists of: (previous years people wrote quite a bit about each member)
+	(we should probably work out roles and talk about our strengths or something)
+	Louis Whitburn – 
+	Garth Wales – I am happy to work on design aspects
+	BJ - 
+	Damian Soo – 
+
+	We are using Kotlin and intend to target Android API level 28 (Android version 9). The app will function by using common formats of each department to guess the locations of papers lecture slides or other information. An example being cs.otago.ac.nz/(papercode)/lectures.php is where most COSC papers have their lecture slide pdfs. The app will then cache and display the information from these pages.
+
+	We will begin by implementing PDF viewing capabilities and pulling the PDF from one specific paper, then expand into a better dynamic system. 
+
+	It will take roughly 5 months of part time work to complete the app, including some time for unexpected issues or setbacks.
 	
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=\linewidth]{chart.png}
 	\end{figure}
 	
-	Establishment has the \url{cs.otago.ac.nz} website, however navigating it on mobile is not a great experience.
+	Our biggest risk is website formats changing causing the app to no longer function. Either with individual papers changing the layout or using different systems such as blackboard. For blackboard we will explore credential storage to access pages behind passwords to ensure we have full coverage.
 	
-	This will irritate the establishment since we will be creating a better version of what they already have - and will use the establishment's own gitlab server to do so. This will irritate people since the COSC department likes to do everything themselves, even if it occasionally breaks. In addition, having someone scrape your website and download a bunch of PDFs is possible irritating to some people.
+	The establishment already has websites such as cs.otago.ac.nz. However, these websites are rubbish on mobile devices and they do not provide any mobile solutions. We will irritate the establishment by creating a better alternative to their existing solutions. We will be doing this with our source code hosted on the establishments own gitlab server to add insult to injury.
 \end{document}
