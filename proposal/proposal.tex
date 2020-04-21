@@ -6,37 +6,77 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{xcolor}
+
+\definecolor{ag}{RGB}{112,173,71}
+\definecolor{bl}{RGB}{196,89,18}
+\definecolor{ds}{RGB}{255,0,0}
+\definecolor{gw}{RGB}{255,191,4}
+\definecolor{lw}{RGB}{112,48,160}
 
 \title{COSC345 App Proposal}
-\author{Name 1 (ID 1) Name 2 (ID 2) \\ Damian Soo (6551336) Louis Whitburn (2548261)}
+
+%Names in alphabetical order by surname
+\author{Burnie Lorimer (ID 1) Damian Soo (6551336) \\ Garth Wales (ID 3) Louis Whitburn (2548261)}
 \date{\today}
 
 \begin{document}
 	\maketitle
 	
+	\section{What we intend to build}
+	
 	We are building an android app to display university course material. This will be targeted towards displaying content from \url{cs.otago.ac.nz} primarily. It will provide an easy to view format of each paper for mobile devices. Information will be pulled from the websites themselves and formatted.
 	
-	Our team consists of: (previous years people wrote quite a bit about each member)
-	(we should probably work out roles and talk about our strengths or something)
+	\subsection{Requirements}
+	
 	\begin{itemize}
-		\item Louis Whitburn – Programming
-		\item Garth Wales – Front end UI development
-		\item BJ - 
+		\item Should support differentiating between lecture, tutorial and assignment PDFs for undergraduate COSC papers, and handle PDFs in general for MATH/STAT papers.
+		\item Should support querying marks for COSC and MATH/STAT papers.
+		\item Should be able to download and display a PDF file to the user within 3s of the user selecting it.
+		\item Should be able to display a downloaded (i.e. cached) PDF within 0.5s of the user selecting it.
+		\item Should warn the user before downloading on mobile data.
+	\end{itemize}
+	
+	\section{Our anarchists}
+	
+	Our team consists of: 
+	\begin{itemize}
+		\item Burnie Lorimer - 
 		\item Damian Soo – Programming (change later)
+		\item Garth Wales – Front end UI development
+		\item Louis Whitburn – Programming
 	\end{itemize}
 
-	We are using Kotlin and intend to target Android API level 28 (Android version 9). The app will function by using common formats of each department to guess the locations of papers lecture slides or other information. An example being \url{cs.otago.ac.nz/(papercode)/lectures.php} is where most COSC papers have their lecture slide PDFs. The app will then cache and display the information from these pages.
+	\section{How we are going to build it}
+
+	We will use Android Studio with Kotlin, We intend to target Android API level 28 (Android version 9). The app will function by using common formats of each department to guess the locations of papers lecture slides or other information. An example being \url{cs.otago.ac.nz/(papercode)/lectures.php} is where most COSC papers have their lecture slide PDFs. The app will then cache and display the information from these pages.
+
+	\section{How long it will take to build}
 
 	We will begin by implementing PDF viewing capabilities and pulling the PDF from one specific paper, then expand into a better dynamic system. 
 
 	It will take roughly 5 months of part time work to complete the app, including some time for unexpected issues or setbacks.
 	
-	\begin{figure}[h!]
+	The key targets and milestones are laid out below.
+	
+	\begin{itemize}
+		\item All group: {\color{ag} \rule{\baselineskip}{\baselineskip}}
+		\item Burnie Lorimer: {\color{bl} \rule{\baselineskip}{\baselineskip}}
+		\item Damien Soo: {\color{ds} \rule{\baselineskip}{\baselineskip}}
+		\item Garth Wales: {\color{gw} \rule{\baselineskip}{\baselineskip}}
+		\item Louis Whitburn: {\color{lw} \rule{\baselineskip}{\baselineskip}}
+	\end{itemize}
+	
+	\begin{figure}[H]
 		\centering
 		\includegraphics[width=\linewidth]{chart.png}
 	\end{figure}
 	
-	Our biggest risk is website formats changing causing the app to no longer function. Either with individual papers changing the layout or using different systems such as blackboard. For blackboard we will explore credential storage to access pages behind passwords to ensure we have full coverage.
+	\section{Pre-existing options and causing irritation}
 	
-	The establishment already has websites such as \url{cs.otago.ac.nz}. However, these websites are rubbish on mobile devices and they do not provide any mobile solutions. We will irritate the establishment by creating a better alternative to their existing solutions. We will be doing this with our source code hosted on the establishments own gitlab server \url{altitude.otago.ac.nz} to add insult to injury.
+	The establishment already has websites such as \url{cs.otago.ac.nz}. However, these websites are rubbish on mobile devices and they do not provide any mobile solutions. We will irritate the establishment by creating a better alternative to their existing solutions. We will be doing this with our source code hosted on the establishment's own GitLab server \url{altitude.otago.ac.nz} to add insult to injury.
+	
+	\section{Risks}
+	
+	Our biggest risk is website formats changing causing the app to no longer function. Either with individual papers changing the layout or using different systems such as blackboard. For blackboard we will explore credential storage to access pages behind passwords to ensure we have full coverage.
 \end{document}
