@@ -30,12 +30,14 @@
 	\subsection{Requirements}
 	
 	\begin{itemize}
-		\item Should support differentiating between lecture, tutorial and assignment PDFs for undergraduate COSC papers, and handle PDFs in general for MATH/STAT papers.
-		\item Should support querying marks for COSC and MATH/STAT papers.
+		\item Should support differentiating between lecture, tutorial and assignment PDFs for undergraduate COSC papers, and handle PDFs in general for undergraduate MATH/STAT papers.
+		\item Should support querying marks for undergraduate COSC and undergraduate MATH/STAT papers.
 		\item Should be able to download and display a PDF file to the user within 3s of the user selecting it.
 		\item Should be able to display a downloaded (i.e. cached) PDF within 0.5s of the user selecting it.
 		\item Should warn the user before downloading on mobile data.
 	\end{itemize}
+	
+	A stretch goal is to include postgraduate papers COSC, MATH and STAT papers. This could be implemented if we run ahead of schedule.
 	
 	\section{Our anarchists \textit{(and their expertise)}} 
 	
@@ -85,9 +87,9 @@
 	
 	\section{Risks}
 	
-	Our biggest risk is website formats changing causing the app to no longer function. Either with individual papers changing the layout or using different systems such as blackboard. For blackboard we will explore credential storage to access pages behind passwords to ensure we have full coverage.
+	Our biggest risk is website formats changing causing the app to no longer function. Either with individual papers changing the layout or using different systems such as blackboard. For blackboard and the MATH/STAT pages we will explore credential storage to access pages behind passwords to ensure we have full coverage. A workaround for this is allowing users to specify custom locations for resources.
 	
-	The next largest risk is not meeting deliverables / milestones. This is easily mitigated by simply sticking to the above chart. In addition assignments of tasks to people may be shifted around as needed, and we will ``meet''\footnote{In some capacity} weekly.
+	The next largest risk is not meeting deliverables / milestones. This is easily mitigated by simply sticking to the above chart\footnote{If every project just stuck to schedule then we would live in a world in which software was always delivered on time and bug free. Since this is not the world we live in it is reasonable to assume that that advice is rather unhelpful. However in a university environment stating the obvious about deadlines is not without merit.}. In addition assignments of tasks to people may be shifted around as needed, and we will ``meet''\footnote{In some capacity} weekly.
 	
 	Other risks include unfamiliarity with Kotlin and Android development, and the volatile COVID-19 situation (although other illnesses are more likely).
 \end{document}
