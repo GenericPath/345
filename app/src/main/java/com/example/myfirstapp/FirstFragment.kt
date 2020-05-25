@@ -1,5 +1,6 @@
 package com.example.myfirstapp
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -45,8 +46,14 @@ class FirstFragment : Fragment() {
             countMe(view)
         }
 
-        view.findViewById<Button>(R.id.testPage).setOnClickListener {
+        view.findViewById<Button>(R.id.pdfTest).setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_ThirdFragment)
+        }
+
+        view.findViewById<Button>(R.id.listTest).setOnClickListener {
+            //findNavController().navigate(R.id.action_FirstFragment_to_itemFragment)
+            val intent = Intent(context, ItemFragment::class.java)
+            startActivity(intent)
         }
     }
 

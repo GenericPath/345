@@ -48,4 +48,9 @@
         android:name="com.example.myfirstapp.PdfView"
         android:label="fragment_pdf_view"
         tools:layout="@layout/fragment_pdf_view" />
+    <fragment
+        android:id="@+id/itemFragment"
+        android:name="com.example.myfirstapp.ItemFragment"
+        android:label="fragment_item_list"
+        tools:layout="@layout/fragment_item_list" />
 </navigation>

@@ -62,12 +62,20 @@
         app:layout_constraintTop_toBottomOf="@+id/textview_first" />
 
     <Button
-        android:id="@+id/testPage"
+        android:id="@+id/pdfTest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/test_page"
+        android:text="@string/pdf_test"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/count_button" />
+
+    <Button
+        android:id="@+id/listTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/list_test"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/count_button" />
 </androidx.constraintlayout.widget.ConstraintLayout>

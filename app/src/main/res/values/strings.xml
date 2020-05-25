@@ -15,7 +15,8 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="testText">PDF Testing Page</string>
-    <string name="test_page">Test Page</string>
+    <string name="pdf_test">PDF Test</string>
+    <string name="list_test">List Test</string>
     <string name="openPDF">Open PDF</string>
 
     <!-- TODO: Remove or change this placeholder text -->
