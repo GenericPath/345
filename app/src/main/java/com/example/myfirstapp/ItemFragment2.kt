@@ -1,9 +1,11 @@
 package com.example.myfirstapp
 
+import android.content.Context
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.fragment_item_list.*
+import java.io.File
 
 class ItemFragment2 : AppCompatActivity() {
 
@@ -11,7 +13,7 @@ class ItemFragment2 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.fragment_item_list)
 
-        val list = generateList(500)
+        val list = generateList(filesDir.listFiles().size)
 
         recycler_view.adapter = MyItemRecyclerViewAdapter(list)
         recycler_view.layoutManager = LinearLayoutManager(this)
@@ -29,7 +31,12 @@ class ItemFragment2 : AppCompatActivity() {
                 else -> R.drawable.ic_thumb
             }
 
-            val item = TestItem(drawable, "Item $i", "Line 2")
+            val type = if (filesDir.listFiles()[i].isDirectory) {
+                "folder"
+            } else {
+                filesDir.listFiles()[i].extension
+            }
+            val item = TestItem(drawable, filesDir.listFiles()[i].name, type)
             list += item
         }
 
