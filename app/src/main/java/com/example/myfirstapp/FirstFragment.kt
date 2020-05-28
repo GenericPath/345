@@ -55,6 +55,12 @@ class FirstFragment : Fragment() {
             val intent = Intent(context, ItemFragment::class.java)
             startActivity(intent)
         }
+
+        view.findViewById<Button>(R.id.listTest2).setOnClickListener {
+            //findNavController().navigate(R.id.action_FirstFragment_to_itemFragment)
+            val intent = Intent(context, ItemFragment2::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun countMe(view: View) {
