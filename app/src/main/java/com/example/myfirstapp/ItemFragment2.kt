@@ -25,18 +25,21 @@ class ItemFragment2 : AppCompatActivity() {
         val list = ArrayList<TestItem>()
 
         for (i in 0 until size) {
-            val drawable = when (i % 3) {
-                0 -> R.drawable.ic_android
-                1 -> R.drawable.ic_sentiment
-                else -> R.drawable.ic_thumb
-            }
-
-            val type = if (filesDir.listFiles()[i].isDirectory) {
+            val fileType = if (filesDir.listFiles()[i].isDirectory) {
                 "folder"
             } else {
                 filesDir.listFiles()[i].extension
             }
-            val item = TestItem(drawable, filesDir.listFiles()[i].name, type)
+
+            val drawable = if (fileType == "folder") {
+                R.drawable.ic_folder
+            } else if (fileType == "pdf" ){
+                R.drawable.ic_pdf
+            } else {
+                R.drawable.ic_thumb
+            }
+
+            val item = TestItem(drawable, filesDir.listFiles()[i].name, fileType)
             list += item
         }
 
