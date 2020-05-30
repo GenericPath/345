@@ -18,7 +18,7 @@ before_script:
   - echo y | tools/android --silent update sdk --no-ui --all --filter extra-google-m2repository
   - export ANDROID_HOME=$PWD/
   - export PATH=$PATH:$PWD//platform-tools/
-  - chmod +x ./gradlewl
+  - chmod +x ./gradlew
 
 stages:
   - build
