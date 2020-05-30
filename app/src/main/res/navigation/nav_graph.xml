@@ -17,6 +17,9 @@
         <action
             android:id="@+id/action_FirstFragment_to_ThirdFragment"
             app:destination="@id/ThirdFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_recyclerViewFragment"
+            app:destination="@id/recyclerViewFragment" />
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
@@ -39,18 +42,15 @@
         <action
             android:id="@+id/action_ThirdFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
-        <action
-            android:id="@+id/action_ThirdFragment_to_pdfView2"
-            app:destination="@id/pdfView2" />
     </fragment>
-    <fragment
-        android:id="@+id/pdfView2"
-        android:name="com.example.myfirstapp.PdfView"
-        android:label="fragment_pdf_view"
-        tools:layout="@layout/fragment_pdf_view" />
     <fragment
         android:id="@+id/itemFragment"
         android:name="com.example.myfirstapp.ItemFragment"
         android:label="fragment_item_list"
         tools:layout="@layout/fragment_item_list" />
+    <fragment
+        android:id="@+id/recyclerViewFragment"
+        android:name="com.example.myfirstapp.RecyclerViewFragment"
+        android:label="fragment_recycler_view"
+        tools:layout="@layout/fragment_recycler_view" />
 </navigation>

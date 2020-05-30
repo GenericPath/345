@@ -57,9 +57,12 @@ class FirstFragment : Fragment() {
         }
 
         view.findViewById<Button>(R.id.listTest2).setOnClickListener {
-            //findNavController().navigate(R.id.action_FirstFragment_to_itemFragment)
+            findNavController().navigate(R.id.action_FirstFragment_to_recyclerViewFragment)
+
+            /*
             val intent = Intent(context, ItemFragment2::class.java)
             startActivity(intent)
+             */
         }
     }
 

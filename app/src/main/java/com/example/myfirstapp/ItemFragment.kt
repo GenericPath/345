@@ -23,7 +23,9 @@ class ItemFragment : AppCompatActivity() {
         val list = generateList(elements)
 
 
-        recycler_view.adapter = MyItemRecyclerViewAdapter(list)
+        recycler_view.adapter = MyItemRecyclerViewAdapter(list) {
+
+        }
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.setHasFixedSize(true)
     }
