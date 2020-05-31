@@ -52,5 +52,18 @@
         android:id="@+id/recyclerViewFragment"
         android:name="com.example.myfirstapp.RecyclerViewFragment"
         android:label="fragment_recycler_view"
-        tools:layout="@layout/fragment_recycler_view" />
+        tools:layout="@layout/fragment_recycler_view" >
+        <action
+            android:id="@+id/action_recyclerViewFragment_to_recyclerPdfFragment3"
+            app:destination="@id/recyclerPdfFragment3" />
+    </fragment>
+    <fragment
+        android:id="@+id/recyclerPdfFragment3"
+        android:name="com.example.myfirstapp.RecyclerPdfFragment"
+        android:label="fragment_recycler_pdf"
+        tools:layout="@layout/fragment_recycler_pdf" >
+        <argument
+            android:name="fileName"
+            app:argType="string" />
+    </fragment>
 </navigation>

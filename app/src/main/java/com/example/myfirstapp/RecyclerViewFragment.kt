@@ -6,9 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_item_list.*
 
 
@@ -59,24 +61,8 @@ class RecyclerViewFragment : Fragment() {
     }
 
     private fun openFile(item: TestItem) {
-        val myToast = Toast.makeText(context, "poggers?", Toast.LENGTH_SHORT)
-        myToast.show()
-
-        /*
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-
-        val action = FirstFragmentDirections.actionFirstFragmentToRecyclerPdfFragment(item.text1)
+        val action = RecyclerViewFragmentDirections.actionRecyclerViewFragmentToRecyclerPdfFragment3(item.text1)
         NavHostFragment.findNavController(nav_host_fragment).navigate(action)
-        */
-
-        /*
-        val file = File(filesDir, item.text1)
-        val pdfView = findViewById<PDFView>(R.id.recyclerPdfView)
-
-        pdfView.fromFile(file).load()
-         */
-
     }
 }
 
