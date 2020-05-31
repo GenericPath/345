@@ -7,11 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_item_list.*
+import java.io.File
 
 
 class RecyclerViewFragment : Fragment() {
@@ -24,10 +26,13 @@ class RecyclerViewFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_recycler_view, container, false)
     }
 
+    val args : RecyclerViewFragmentArgs by navArgs()
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        val list = generateList(context?.filesDir!!.listFiles().size)
+        val dir = File(args.dir)
+        val list = generateList(dir.listFiles().size)
 
         recycler_view.adapter = MyItemRecyclerViewAdapter(list) { item ->
             openFile(item)
@@ -39,12 +44,13 @@ class RecyclerViewFragment : Fragment() {
     private fun generateList(size: Int): List<TestItem> {
 
         val list = ArrayList<TestItem>()
+        val dir = File(args.dir)
 
         for (i in 0 until size) {
-            val fileType = if (context?.filesDir!!.listFiles()[i].isDirectory) {
+            val fileType = if (dir.listFiles()[i].isDirectory) {
                 "folder"
             } else {
-                context?.filesDir!!.listFiles()[i].extension
+                dir.listFiles()[i].extension
             }
 
             val drawable = when (fileType) {
@@ -53,7 +59,7 @@ class RecyclerViewFragment : Fragment() {
                 else -> R.drawable.ic_thumb
             }
 
-            val item = TestItem(drawable, context?.filesDir!!.listFiles()[i].name, fileType)
+            val item = TestItem(drawable, dir.listFiles()[i].name, fileType)
             list += item
         }
 
@@ -61,8 +67,20 @@ class RecyclerViewFragment : Fragment() {
     }
 
     private fun openFile(item: TestItem) {
-        val action = RecyclerViewFragmentDirections.actionRecyclerViewFragmentToRecyclerPdfFragment3(item.text1)
-        NavHostFragment.findNavController(nav_host_fragment).navigate(action)
+        when (item.text2) {
+            "pdf" -> {
+                val action = RecyclerViewFragmentDirections.actionRecyclerViewFragmentToRecyclerPdfFragment3(item.text1)
+                NavHostFragment.findNavController(nav_host_fragment).navigate(action)
+            }
+            "folder" -> {
+                val action = RecyclerViewFragmentDirections.actionRecyclerViewFragmentSelf(args.dir + "/" + item.text1)
+                NavHostFragment.findNavController(nav_host_fragment).navigate(action)
+            }
+            else -> {
+                val toast = Toast.makeText(context, args.dir + "/" + item.text1, Toast.LENGTH_LONG)
+                toast.show()
+            }
+        }
     }
 }
 

@@ -57,7 +57,9 @@ class FirstFragment : Fragment() {
         }
 
         view.findViewById<Button>(R.id.listTest2).setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_recyclerViewFragment)
+            val dir = context?.filesDir.toString()
+            val action = FirstFragmentDirections.actionFirstFragmentToRecyclerViewFragment(dir)
+            findNavController().navigate(action)
 
             /*
             val intent = Intent(context, ItemFragment2::class.java)
