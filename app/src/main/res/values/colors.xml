@@ -7,4 +7,5 @@
     <color name="buttonBackground">#BBDEFB</color>
     <color name="screenBackground2">#26C6DA</color>
     <color name="screenBackground3">#f27446</color>
+    <color name="pdfBackground">#fafafa</color>
 </resources>
