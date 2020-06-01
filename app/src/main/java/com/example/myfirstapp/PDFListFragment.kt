@@ -15,7 +15,7 @@ import java.io.File
 import kotlin.collections.ArrayList
 
 
-class RecyclerViewFragment : Fragment() {
+class PDFListFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,7 +25,7 @@ class RecyclerViewFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_recycler_view, container, false)
     }
 
-    val args : RecyclerViewFragmentArgs by navArgs()
+    val args : PDFListFragmentArgs by navArgs()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -39,14 +39,16 @@ class RecyclerViewFragment : Fragment() {
         }
         val list = generateList(size)
 
-        recycler_view.adapter = MyItemRecyclerViewAdapter(list) { item ->
+        recycler_view.adapter = PDFItemRecyclerViewAdapter(list) { item ->
             openFile(item)
         }
         recycler_view.layoutManager = LinearLayoutManager(context)
         recycler_view.setHasFixedSize(true)
+
+
     }
 
-    private fun generateList(size: Int): List<TestItem> {
+    private fun generateList(size: Int): List<PDFItem> {
 
         val dir = File(args.dir)
         val filteredDir = ArrayList<File>()
@@ -55,7 +57,7 @@ class RecyclerViewFragment : Fragment() {
                 filteredDir += dir.listFiles()[i]
             }
         }
-        val list = ArrayList<TestItem>()
+        val list = ArrayList<PDFItem>()
 
         for (i in 0 until size) {
             val fileType = if (filteredDir[i].isDirectory) {
@@ -70,7 +72,7 @@ class RecyclerViewFragment : Fragment() {
                 else -> R.drawable.ic_thumb
             }
 
-            val item = TestItem(drawable, filteredDir[i].name, fileType)
+            val item = PDFItem(drawable, filteredDir[i].name, fileType)
             list += item
         }
 
@@ -78,25 +80,25 @@ class RecyclerViewFragment : Fragment() {
         //return fileSort(list)
     }
 
-    private fun openFile(item: TestItem) {
-        when (item.text2) {
+    private fun openFile(item: PDFItem) {
+        when (item.pathType) {
             "pdf" -> {
-                val action = RecyclerViewFragmentDirections.actionRecyclerViewFragmentToRecyclerPdfFragment3(item.text1)
+                val action = PDFListFragmentDirections.actionPDFListFragmentToPDFViewFragment(item.pathName)
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
             "folder" -> {
-                val action = RecyclerViewFragmentDirections.actionRecyclerViewFragmentSelf(args.dir + "/" + item.text1)
+                val action = PDFListFragmentDirections.actionPDFListFragmentSelf(args.dir + "/" + item.pathName)
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
             else -> {
-                val toast = Toast.makeText(context, args.dir + "/" + item.text1, Toast.LENGTH_LONG)
+                val toast = Toast.makeText(context, args.dir + "/" + item.pathName, Toast.LENGTH_LONG)
                 toast.show()
             }
         }
     }
 
-    private fun fileSort(list: ArrayList<TestItem>) : List<TestItem> {
-        return list.sortedWith(compareBy {it.text1})
+    private fun fileSort(list: ArrayList<PDFItem>) : List<PDFItem> {
+        return list.sortedWith(compareBy {it.pathName})
     }
 }
 

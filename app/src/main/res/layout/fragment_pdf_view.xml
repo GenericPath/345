@@ -5,16 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/screenBackground3"
-    tools:context=".ThirdFragment">
+    tools:context=".PDFViewFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
     <TextView
-        android:id="@+id/testText"
+        android:id="@+id/test_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="@string/testText"
+        android:text="@string/test_text"
         android:textAlignment="center"
         android:textSize="30sp"
         android:textStyle="bold"
@@ -22,25 +22,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/home"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/previous"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/openPDF"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/openPDF"
-        app:layout_constraintBottom_toTopOf="@+id/home"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/testText" />
 
     <com.github.barteksc.pdfviewer.PDFView
         android:id="@+id/pdfView"
@@ -49,7 +30,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/test_text">
 
     </com.github.barteksc.pdfviewer.PDFView>
 

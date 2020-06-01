@@ -12,64 +12,39 @@
         tools:layout="@layout/fragment_first">
 
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-        <action
-            android:id="@+id/action_FirstFragment_to_ThirdFragment"
-            app:destination="@id/ThirdFragment" />
+            android:id="@+id/action_FirstFragment_to_PDFViewFragment"
+            app:destination="@id/PDFViewFragment" />
         <action
             android:id="@+id/action_FirstFragment_to_recyclerViewFragment"
-            app:destination="@id/recyclerViewFragment" />
+            app:destination="@id/PDFListFragment" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.example.myfirstapp.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
+        android:id="@+id/PDFViewFragment"
+        android:name="com.example.myfirstapp.PDFViewFragment"
+        android:label="fragment_third"
+        tools:layout="@layout/fragment_pdf_view" >
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            android:id="@+id/action_PDFViewFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
         <argument
-            android:name="myArg"
-            app:argType="integer" />
+            android:name="pdf_file_name"
+            app:argType="string"
+            android:defaultValue="report.pdf" />
     </fragment>
     <fragment
-        android:id="@+id/ThirdFragment"
-        android:name="com.example.myfirstapp.ThirdFragment"
-        android:label="fragment_third"
-        tools:layout="@layout/fragment_third" >
-        <action
-            android:id="@+id/action_ThirdFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/itemFragment"
-        android:name="com.example.myfirstapp.ItemFragment"
-        android:label="fragment_item_list"
-        tools:layout="@layout/fragment_item_list" />
-    <fragment
-        android:id="@+id/recyclerViewFragment"
-        android:name="com.example.myfirstapp.RecyclerViewFragment"
+        android:id="@+id/PDFListFragment"
+        android:name="com.example.myfirstapp.PDFListFragment"
         android:label="fragment_recycler_view"
         tools:layout="@layout/fragment_recycler_view" >
-        <action
-            android:id="@+id/action_recyclerViewFragment_to_recyclerPdfFragment3"
-            app:destination="@id/recyclerPdfFragment3" />
-        <action
-            android:id="@+id/action_recyclerViewFragment_self"
-            app:destination="@id/recyclerViewFragment" />
         <argument
             android:name="dir"
-            app:argType="string" />
-    </fragment>
-    <fragment
-        android:id="@+id/recyclerPdfFragment3"
-        android:name="com.example.myfirstapp.RecyclerPdfFragment"
-        android:label="fragment_recycler_pdf"
-        tools:layout="@layout/fragment_recycler_pdf" >
-        <argument
-            android:name="fileName"
-            app:argType="string" />
+            app:argType="string"
+            android:defaultValue="/data/data/com.example.myfirstapp/files" />
+        <action
+            android:id="@+id/action_PDFListFragment_to_PDFViewFragment"
+            app:destination="@id/PDFViewFragment" />
+        <action
+            android:id="@+id/action_PDFListFragment_self"
+            app:destination="@id/PDFListFragment" />
     </fragment>
 </navigation>
