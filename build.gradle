@@ -2,6 +2,10 @@
 
 buildscript {
     ext.kotlin_version = '1.3.71'
+    // Errors occur in windows until version 0.11.0 releases
+    // https://github.com/Kotlin/dokka/issues/656#issuecomment-627661256
+    ext.dokka_version = '0.10.1'
+
     repositories {
         google()
         jcenter()
@@ -12,7 +16,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         def nav_version = "2.3.0-alpha02"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
-
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
