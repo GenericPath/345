@@ -10,11 +10,13 @@ import org.jsoup.nodes.*
 import org.jsoup.select.Elements
 import android.util.Log
 import android.content.Context
+import android.widget.TextView
 import kotlinx.coroutines.*
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+import kotlinx.android.synthetic.main.fragment_fetch.*
 
 /**
  * A simple [Fragment] subclass.
@@ -31,69 +33,76 @@ class FetchFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        PDFService.startService("cs.otago.ac.nz/cosc241/lectures.php", "/data/data/com.example.myfirstapp/files/cosc241");
+        PDFService.startService("cs.otago.ac.nz/cosc241/lectures.php", "/data/data/com.example.myfirstapp/files/cosc241", this);
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_fetch, container, false)
     }
+
+    fun finished() {
+        textFetch.text = "Fetch complete";
+    }
+}
+
+
+object PDFService {
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
+    fun startService(url : String, storage : String, inFragment : FetchFragment): ArrayList<String> {
+        Log.d("startService", "begin PDFService")
+        var links = ArrayList<String>()
+        coroutineScope.launch {
+            links = fetchLinks(url)
+            if(links.size > 0) {
+                val download = downloadPDF(links, storage/*, context*/)
+            }
+            inFragment.finished()
+            Log.d("startService", "exit coroutine scope")
+        }
+
+        return links
     }
 
-    object PDFService {
-        private val coroutineScope = CoroutineScope(Dispatchers.IO)
-
-        fun startService(url : String, storage : String/*, context : Context*/): ArrayList<String> {
-            Log.d("startService", "begin PDFService")
-            var links = ArrayList<String>()
-            coroutineScope.launch {
-                links = fetchLinks(url)
-                if(links.size > 0) {
-                    val download = downloadPDF(links, storage/*, context*/)
-                }
-                Log.d("startService", "exit coroutine scope")
+    private suspend fun fetchLinks(url : String): ArrayList<String> {
+        val links = ArrayList<String>()
+        try {
+            Log.d("fetchLinks", url)
+            val document: Document = Jsoup.connect("https://" + url).get()
+            val elements = document.select("tr a")
+            for(i in 0 until elements.size) {
+                Log.d("fetchLinks", elements[i].attr("href"))
+                links += elements[i].attr("href") // not sure if this works or not
             }
-            return links
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
-        private suspend fun fetchLinks(url : String): ArrayList<String> {
-            val links = ArrayList<String>()
-            try {
-                Log.d("fetchLinks", url)
-                val document: Document = Jsoup.connect("https://" + url).get()
-                val elements = document.select("tr a")
-                for(i in 0 until elements.size) {
-                    Log.d("fetchLinks", elements[i].attr("href"))
-                    links += elements[i].attr("href") // not sure if this works or not
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+        return links
+    }
+
+    private suspend fun downloadPDF(links : ArrayList<String>, storage: String/*, context: Context*/) {
+        links.forEach {
+            val url = URL("https://cs.otago.ac.nz/cosc241/" + it)
+            val fname = it.substring( it.lastIndexOf('/')+1, it.length);
+            val buf = ByteArray(1024)
+            var byteRead: Int
+            val p = File(storage)
+            p.mkdirs()
+            val f = File(storage, fname)
+            f.createNewFile()
+            var outStream = BufferedOutputStream(
+                FileOutputStream(storage + "/" + fname)
+            )
+
+            val conn = url.openConnection()
+            var inStream = conn.getInputStream()
+            byteRead = inStream!!.read(buf)
+            while (byteRead != -1) {
+                outStream.write(buf, 0, byteRead)
+                byteRead = inStream.read(buf)
             }
-
-            return links
-        }
-
-        private suspend fun downloadPDF(links : ArrayList<String>, storage: String/*, context: Context*/) {
-            links.forEach {
-                val url = URL("https://cs.otago.ac.nz/cosc241/" + it)
-                val fname = it.substring( it.lastIndexOf('/')+1, it.length);
-                val buf = ByteArray(1024)
-                var byteRead: Int
-                val p = File(storage)
-                p.mkdirs()
-                val f = File(storage, fname)
-                f.createNewFile()
-                var outStream = BufferedOutputStream(
-                    FileOutputStream(storage + "/" + fname)
-                )
-
-                val conn = url.openConnection()
-                var inStream = conn.getInputStream()
-                byteRead = inStream!!.read(buf)
-                while (byteRead != -1) {
-                    outStream.write(buf, 0, byteRead)
-                    byteRead = inStream.read(buf)
-                }
-                inStream.close()
-                outStream.close()
-            };
-            Log.d("downloadPDF", "reached")
-        }
+            inStream.close()
+            outStream.close()
+        };
+        Log.d("downloadPDF", "reached")
+    }
 }
