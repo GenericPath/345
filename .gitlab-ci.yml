@@ -48,4 +48,4 @@ document:
     - ./gradlew dokka
   artifacts:
     paths:
-      public
+      - public
