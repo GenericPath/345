@@ -9,6 +9,7 @@ import android.widget.Button
 import androidx.navigation.fragment.findNavController
 import com.github.barteksc.pdfviewer.PDFView
 import java.io.File
+import android.util.Log
 
 
 class PDFViewFragment : Fragment() {
@@ -27,11 +28,10 @@ class PDFViewFragment : Fragment() {
         /*
             https://github.com/barteksc/AndroidPdfViewer
          */
-        val path = context?.filesDir
         // on pixel 2 this dir is /data/data/com.example.myfirstapp/files
         // use adb root; adb push report.pdf /data/data/com.example.myfirstapp/files
-        val pdfFilename = arguments?.getString("pdf_file_name")
-        val file = File(path, pdfFilename)
+        val file = File(arguments?.getString("pdf_file_name"))
+        Log.d("viewPdf", file.absolutePath)
         val pdfView = view.findViewById<PDFView>(R.id.pdfView)
         pdfView.fromFile(file).load()
     }

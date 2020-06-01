@@ -83,7 +83,7 @@ class PDFListFragment : Fragment() {
     private fun openFile(item: PDFItem) {
         when (item.pathType) {
             "pdf" -> {
-                val action = PDFListFragmentDirections.actionPDFListFragmentToPDFViewFragment(item.pathName)
+                val action = PDFListFragmentDirections.actionPDFListFragmentToPDFViewFragment(args.dir + "/" + item.pathName)
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
             "folder" -> {

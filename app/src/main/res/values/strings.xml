@@ -17,6 +17,7 @@
     <string name="test_text">PDF Testing Page</string>
     <string name="pdf_test">PDF Test</string>
     <string name="list_test">List Test</string>
+    <string name="fetch_test">Fetch Test</string>
     <string name="open_pdf">Open PDF</string>
 
     <!-- TODO: Remove or change this placeholder text -->
