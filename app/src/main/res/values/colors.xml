@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorPrimary">#26A1FF</color>
+    <color name="colorPrimaryDark">#3D6EFF</color>
     <color name="colorAccent">#03DAC5</color>
-    <color name="screenBackground">#2196F3</color>
-    <color name="buttonBackground">#BBDEFB</color>
-    <color name="screenBackground2">#26C6DA</color>
-    <color name="screenBackground3">#f27446</color>
+    <color name="screenBackground">#FFFFFF</color>
+    <color name="buttonBackground">#C5E0F6</color>
+    <color name="screenBackground2">#C3F4FA</color>
+    <color name="screenBackground3">#F8DACF</color>
     <color name="pdfBackground">#fafafa</color>
 </resources>
