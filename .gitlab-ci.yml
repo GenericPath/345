@@ -25,17 +25,15 @@ default:
       - set -o pipefail
 
 lintDebug:
-  image: openjdk:8-jdk
+  environment 
   stage: build
   script:
     - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
 
 assembleDebug:
-  image: openjdk:8-jdk
   stage: build
   script:
     - ./gradlew assembleDebug
-    - mv app/build/dokka public/
   artifacts:
     paths:
       - app/build/outputs/
@@ -46,10 +44,10 @@ assembleDebug:
 #    - ./gradlew -Pci --console=plain :app:testDebug
 
 document:
-  image: openjdk:8-jdk
   stage: deploy
   script:
     - ./gradlew dokka
+    - mv app/build/dokka public/
   artifacts:
     paths:
       - public
