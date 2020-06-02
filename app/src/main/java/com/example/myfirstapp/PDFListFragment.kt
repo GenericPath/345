@@ -1,6 +1,7 @@
 package com.example.myfirstapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -30,13 +31,19 @@ class PDFListFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        val dir = File(args.dir)
         var size = 0
-        for (i in 0 until dir.listFiles().size) {
-            if ((dir.listFiles()[i].extension == "pdf") or dir.listFiles()[i].isDirectory) {
-                size++
+        try {
+            val dir = File(args.dir)
+            for (i in 0 until dir.listFiles().size) {
+                if ((dir.listFiles()[i].extension == "pdf") or dir.listFiles()[i].isDirectory) {
+                    size++
+                }
             }
+        } catch (e : Exception) {
+            Log.d("PDFListFragment", "Failed to count files")
+            // should show an error on screen or via toast
         }
+
         val list = generateList(size)
 
         recycler_view.adapter = PDFItemRecyclerViewAdapter(list) { item ->
@@ -52,11 +59,17 @@ class PDFListFragment : Fragment() {
 
         val dir = File(args.dir)
         val filteredDir = ArrayList<File>()
-        for (i in 0 until dir.listFiles().size) {
-            if ((dir.listFiles()[i].extension == "pdf") or dir.listFiles()[i].isDirectory) {
-                filteredDir += dir.listFiles()[i]
+        try {
+            for (i in 0 until dir.listFiles().size) {
+                if ((dir.listFiles()[i].extension == "pdf") or dir.listFiles()[i].isDirectory) {
+                    filteredDir += dir.listFiles()[i]
+                }
             }
+        } catch (e : Exception) {
+            Log.d("PDFListFragment" , "Failed on use of dir.size in generate list")
+            // should show an error on screen or via toast
         }
+
         val list = ArrayList<PDFItem>()
 
         for (i in 0 until size) {
