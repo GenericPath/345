@@ -5,6 +5,8 @@
 
 See proposal at: https://altitude.otago.ac.nz/lwhitburn/c345-project/-/blob/master/proposal/proposal.pdf
 
+See <a href="https://altitude.otago.ac.nz/lwhitburn/c345-project/-/jobs/artifacts/master/file/public/app/index.html?job=pages">latest documentation</a>
+
 Created by
  - Burnie Lorimer (2367465)
  - Damian Soo (6551336)
@@ -33,4 +35,3 @@ Features fetching, storing and viewing lecture slides for Computer Science paper
  - ```./gradlew dokka```
  - open ```/app/build/dokka/app/index.html```
 
- See dokka documentation of latest build <a href="https://lwhitburn.cspages.otago.ac.nz/-/c345-project/-/jobs/10746/artifacts/public/app/index.html">here</a>
