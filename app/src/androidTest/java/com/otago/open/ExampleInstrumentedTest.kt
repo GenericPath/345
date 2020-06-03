@@ -1,4 +1,4 @@
-package com.example.myfirstapp
+package com.otago.open
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

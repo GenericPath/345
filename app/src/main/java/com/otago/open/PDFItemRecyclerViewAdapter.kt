@@ -1,4 +1,4 @@
-package com.example.myfirstapp
+package com.otago.open
 
 import android.view.LayoutInflater
 import android.view.View

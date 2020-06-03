@@ -1,4 +1,4 @@
-package com.example.myfirstapp
+package com.otago.open
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -28,8 +28,8 @@ class PDFViewFragment : Fragment() {
         /*
             https://github.com/barteksc/AndroidPdfViewer
          */
-        // on pixel 2 this dir is /data/data/com.example.myfirstapp/files
-        // use adb root; adb push report.pdf /data/data/com.example.myfirstapp/files
+        // on pixel 2 this dir is /data/data/com.otago.open/files
+        // use adb root; adb push report.pdf /data/data/com.otago.open/files
         val file = File(arguments?.getString("pdf_file_name"))
         Log.d("viewPdf", file.absolutePath)
         val pdfView = view.findViewById<PDFView>(R.id.pdfView)

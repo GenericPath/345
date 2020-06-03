@@ -1,4 +1,4 @@
-package com.example.myfirstapp
+package com.otago.open
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -33,7 +33,7 @@ class FetchFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        PDFService.startService("cs.otago.ac.nz/cosc241/lectures.php", "/data/data/com.example.myfirstapp/files/cosc241", this);
+        PDFService.startService("cs.otago.ac.nz/cosc241/lectures.php", "/data/data/com.otago.open/files/cosc241", this);
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_fetch, container, false)
     }

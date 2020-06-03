@@ -1,4 +1,4 @@
-package com.example.myfirstapp
+package com.otago.open
 
 import android.content.Intent
 import android.os.Bundle

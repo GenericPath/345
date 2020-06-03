@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.example.myfirstapp.FirstFragment"
+        android:name="com.otago.open.FirstFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
 
@@ -23,7 +23,7 @@
     </fragment>
     <fragment
         android:id="@+id/PDFViewFragment"
-        android:name="com.example.myfirstapp.PDFViewFragment"
+        android:name="com.otago.open.PDFViewFragment"
         android:label="fragment_third"
         tools:layout="@layout/fragment_pdf_view" >
         <action
@@ -36,7 +36,7 @@
     </fragment>
     <fragment
         android:id="@+id/PDFListFragment"
-        android:name="com.example.myfirstapp.PDFListFragment"
+        android:name="com.otago.open.PDFListFragment"
         android:label="fragment_recycler_view"
         tools:layout="@layout/fragment_recycler_view" >
         <argument
@@ -52,7 +52,7 @@
     </fragment>
     <fragment
         android:id="@+id/FetchFragment"
-        android:name="com.example.myfirstapp.FetchFragment"
+        android:name="com.otago.open.FetchFragment"
         android:label="fragment_fetch"
         tools:layout="@layout/fragment_fetch" />
 </navigation>
