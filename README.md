@@ -13,22 +13,24 @@ Created by
 
 
 ----
-## Alpha release
+## *Alpha release*
 Features fetching, storing and viewing lecture slides for Computer Science papers.
 
-Requirements to build:
+**Requirements to build:**
  - Java Environment
  - Android SDK version 29 
 
-To build application:
+**To build application:**
 - Clone the repository
-- Option 1 - Android Studio:
+- *Option 1* - Android Studio:
     - Open with Android Studio, wait for initial gradle setup
     - Build (Ctrl+F9) / Emulate (Shift+F10)
-- Option 2 - Bash:
-    - ./gradlew assembleDebug
-    - install /app/build/outputs/apk/debug/app-debug.apk onto device
+- *Option 2* - UNIX:
+    - ```./gradlew assembleDebug ```
+    - install ```/app/build/outputs/apk/debug/app-debug.apk``` onto device
 
-To build documentation:
- - ./gradlew dokka
- - open /app/build/dokka/app/index.html
+**To build documentation:**
+ - ```./gradlew dokka```
+ - open ```/app/build/dokka/app/index.html```
+
+ See dokka documentation of latest build <a href="https://lwhitburn.cspages.otago.ac.nz/-/c345-project/-/jobs/10746/artifacts/public/app/index.html">here</a>
