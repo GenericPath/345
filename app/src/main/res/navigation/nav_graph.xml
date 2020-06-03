@@ -32,7 +32,7 @@
         <argument
             android:name="pdf_file_name"
             app:argType="string"
-            android:defaultValue="/data/data/com.example.myfirstapp/files/report.pdf" />
+            android:defaultValue="/data/data/com.otago.open/files/report.pdf" />
     </fragment>
     <fragment
         android:id="@+id/PDFListFragment"
@@ -42,7 +42,7 @@
         <argument
             android:name="dir"
             app:argType="string"
-            android:defaultValue="/data/data/com.example.myfirstapp/files" />
+            android:defaultValue="/data/data/com.otago.open/files" />
         <action
             android:id="@+id/action_PDFListFragment_to_PDFViewFragment"
             app:destination="@id/PDFViewFragment" />
