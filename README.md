@@ -1,4 +1,6 @@
 # OpenOtago - COSC345 Project
+[![pipeline status](https://altitude.otago.ac.nz/lwhitburn/c345-project/badges/master/pipeline.svg)](https://altitude.otago.ac.nz/lwhitburn/c345-project/-/commits/master)
+
 OpenOtago is an application to provide a mobile replacement to The Univeristy of Otago online resources.
 
 Created by
