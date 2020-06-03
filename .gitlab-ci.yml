@@ -25,17 +25,15 @@ default:
     - set -o pipefail
 
 lintDebug:
-  stage:
-    - build
+  stage: build
   tags:
     - docker
   script:
     - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
-  allow_failure: true
+#  allow_failure: true
 
 assembleDebug:
-  stage:
-    - build
+  stage: build
   tags:
     - docker
   script:
@@ -50,8 +48,7 @@ assembleDebug:
 #    - ./gradlew -Pci --console=plain :app:testDebug
 
 document:
-  stage:
-    - deploy
+  stage: deploy
   tags:
     - docker
   script:
