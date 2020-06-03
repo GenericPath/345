@@ -11,7 +11,10 @@ import com.github.barteksc.pdfviewer.PDFView
 import java.io.File
 import android.util.Log
 
-
+/**
+ * A [Fragment] to view PDFs.
+ * Based on https://github.com/barteksc/AndroidPdfViewer
+ */
 class PDFViewFragment : Fragment() {
 
     override fun onCreateView(

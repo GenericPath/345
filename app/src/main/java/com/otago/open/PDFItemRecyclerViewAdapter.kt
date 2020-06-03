@@ -8,6 +8,13 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_item.view.*
 
+/**
+ * A standard [RecyclerView.Adapter] to display PDF items.
+ * The adapter binds the view holders to their data.
+ *
+ * @see [PDFItemRecyclerViewAdapter]
+ * @see [PDFListFragment]
+ */
 class PDFItemRecyclerViewAdapter(
     private val list: List<PDFItem>,
     private val listener: (PDFItem) -> Unit

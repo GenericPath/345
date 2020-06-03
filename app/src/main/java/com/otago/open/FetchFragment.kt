@@ -29,6 +29,10 @@ class FetchFragment : Fragment() {
 
     }
 
+    /**
+     * Entry point of[FetchFragment].
+     * Starts [PDFService] with hard coded addresses and storage locations.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,15 +42,34 @@ class FetchFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_fetch, container, false)
     }
 
+    /**
+     * Simple message upon finishing fetching.
+     */
     fun finished() {
         textFetch.text = "Fetch complete";
     }
 }
 
-
+/**
+ * Coordinates fetching and downloading PDF files from a url.
+ * Use [PDFService.startService] to begin coroutines will fetch,
+ * and then download each PDF.
+ */
 object PDFService {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
+    /**
+     * Starts fetching and downloading PDFs.
+     * Utilises coroutines to run networking on a separate threads to UI.
+     *
+     * @see fetchLinks for link logic
+     * @see downloadPDF for downloading logic
+     *
+     * @param url the url to search for pdf links from
+     * @param storage the location to store PDFs in
+     * @param inFragment the instance of FetchFragment, to call in class functions
+     * @return list of urls for each PDF on the page, retrieved from [fetchLinks]
+     */
     fun startService(url : String, storage : String, inFragment : FetchFragment): ArrayList<String> {
         Log.d("startService", "begin PDFService")
         var links = ArrayList<String>()
@@ -62,6 +85,11 @@ object PDFService {
         return links
     }
 
+    /**
+     * Retrieve links from a table containing href elements.
+     * @param url the url to search for pdf links from
+     * @return list of urls for each PDF on the page
+     */
     private suspend fun fetchLinks(url : String): ArrayList<String> {
         val links = ArrayList<String>()
         try {
@@ -79,6 +107,11 @@ object PDFService {
         return links
     }
 
+    /**
+     * Download each PDF from list of url endings retrieved from [fetchLinks].
+     * @param links ArrayList of urls that correspond to the endings of urls to PDFs
+     * @param storage the location to store PDFs in
+     */
     private suspend fun downloadPDF(links : ArrayList<String>, storage: String/*, context: Context*/) {
         links.forEach {
             val url = URL("https://cs.otago.ac.nz/cosc241/" + it)

@@ -15,7 +15,9 @@ import kotlinx.android.synthetic.main.fragment_item_list.*
 import java.io.File
 import kotlin.collections.ArrayList
 
-
+/**
+ * A [Fragment] that generates each [PDFItem] to display.
+ */
 class PDFListFragment : Fragment() {
 
     override fun onCreateView(
@@ -26,8 +28,13 @@ class PDFListFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_recycler_view, container, false)
     }
 
+    /** args to pass in directory navigated to */
     val args : PDFListFragmentArgs by navArgs()
 
+    /**
+     * Create the items to display upon starting the fragment.
+     * All items are pulled from one directory.
+     */
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
@@ -55,6 +62,10 @@ class PDFListFragment : Fragment() {
 
     }
 
+    /**
+     * Creates list of [PDFItem] items from what is present in specified directory.
+     * @param size the number of [PDFItem]'s to create
+     */
     private fun generateList(size: Int): List<PDFItem> {
 
         val dir = File(args.dir)
@@ -93,6 +104,10 @@ class PDFListFragment : Fragment() {
         //return fileSort(list)
     }
 
+    /**
+     * Opens item in the directory, either PDF or folder.
+     * @param item The [PDFItem] to display
+     */
     private fun openFile(item: PDFItem) {
         when (item.pathType) {
             "pdf" -> {
@@ -110,6 +125,11 @@ class PDFListFragment : Fragment() {
         }
     }
 
+    /**
+     * Sorts files based on path name.
+     * Order is not guaranteed to be consistent so choose to sort items.
+     * @param list list of [PDFItem] elements, essentially what is present in navigated directory.
+     */
     private fun fileSort(list: ArrayList<PDFItem>) : List<PDFItem> {
         return list.sortedWith(compareBy {it.pathName})
     }
