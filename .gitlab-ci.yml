@@ -49,6 +49,8 @@ assembleDebug:
 
 debugTests:
   stage: test
+  tags:
+   - docker
   script:
     - ./gradlew -Pci --console=plain :app:testDebug
 
