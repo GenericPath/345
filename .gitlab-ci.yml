@@ -27,6 +27,7 @@ default:
 stages:
  - build
  - test
+ - deploy
 
 lintDebug:
   stage: build
