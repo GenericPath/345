@@ -21,6 +21,8 @@ import org.jsoup.Jsoup
 import org.jsoup.UnsupportedMimeTypeException
 import org.jsoup.nodes.Document
 import java.io.*
+import java.lang.IllegalStateException
+import java.lang.NullPointerException
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
@@ -151,17 +153,25 @@ class FetchFragment : Fragment() {
                 e.printStackTrace()
             }
 
-            withContext(Dispatchers.Main) {
-                //Update the UI on completion of paper fetch
-                inFragment.http_bar.visibility = View.GONE
-                inFragment.recycler_view.adapter =
-                    CourseItemRecyclerViewAdapter(links.toList()) { link ->
-                        inFragment.selectType(
-                            link
-                        )
-                    }
-                inFragment.recycler_view.layoutManager = LinearLayoutManager(inFragment.context)
-                inFragment.recycler_view.setHasFixedSize(true)
+            try {
+                withContext(Dispatchers.Main) {
+                    //Update the UI on completion of paper fetch
+                    inFragment.http_bar.visibility = View.GONE
+                    inFragment.recycler_view.adapter =
+                        CourseItemRecyclerViewAdapter(links.toList()) { link ->
+                            inFragment.selectType(
+                                link
+                            )
+                        }
+                    inFragment.recycler_view.layoutManager = LinearLayoutManager(inFragment.context)
+                    inFragment.recycler_view.setHasFixedSize(true)
+                }
+            } catch (e: IllegalStateException) {
+                //Just stop if the fragment is gone
+                return
+            } catch (e: NullPointerException) {
+                //Just stop if the fragment is gone
+                return
             }
         }
     }
@@ -218,11 +228,19 @@ class FetchFragment : Fragment() {
                 downloadPDF(baseUrl, links, storage, inFragment)
 
                 //When finished, navigate to the PDFs
-                withContext(Dispatchers.Main) {
-                    val action =
-                        FetchFragmentDirections.actionFetchFragmentToPDFListFragment(storage)
-                    NavHostFragment.findNavController(inFragment.nav_host_fragment)
-                        .navigate(action)
+                try {
+                    withContext(Dispatchers.Main) {
+                        val action =
+                            FetchFragmentDirections.actionFetchFragmentToPDFListFragment(storage)
+                        NavHostFragment.findNavController(inFragment.nav_host_fragment)
+                            .navigate(action)
+                    }
+                }  catch (e: IllegalStateException) {
+                    //Just stop if the fragment is gone
+                    return@launch
+                }  catch (e: NullPointerException) {
+                    //Just stop if the fragment is gone
+                    return@launch
                 }
             }
         }
@@ -274,23 +292,40 @@ class FetchFragment : Fragment() {
         private suspend fun downloadPDF(baseUrl: String, links: ArrayList<String>, storage: String, inFragment: FetchFragment) {
             Log.d("PDF Downloading", baseUrl)
 
-            withContext(Dispatchers.Main) {
-                //Hide http_bar and show the http_pdf_bar
-                inFragment.http_bar.visibility = View.GONE
+            try {
+                withContext(Dispatchers.Main) {
+                    //Hide http_bar and show the http_pdf_bar
+                    inFragment.http_bar.visibility = View.GONE
 
-                inFragment.http_pdf_bar.max = links.size
+                    inFragment.http_pdf_bar.max = links.size
 
-                //Start at 0
-                inFragment.http_pdf_bar.progress = 0
+                    //Start at 0
+                    inFragment.http_pdf_bar.progress = 0
 
-                inFragment.http_pdf_bar.visibility = View.VISIBLE
+                    inFragment.http_pdf_bar.visibility = View.VISIBLE
+                }
+            }  catch (e: IllegalStateException) {
+                //Just stop if the fragment is gone
+                return
+            } catch (e: NullPointerException) {
+                //Just stop if the fragment is gone
+                return
             }
 
             links.forEachIndexed { i, it ->
-                withContext(Dispatchers.Main) {
-                    //Set progress here
-                    inFragment.http_pdf_bar.progress = i// / links.size
+                try{
+                    withContext(Dispatchers.Main) {
+                        //Set progress here
+                        inFragment.http_pdf_bar.progress = i// / links.size
+                    }
+                }  catch (e: IllegalStateException) {
+                    //Just stop if the fragment is gone
+                    return
+                } catch (e: NullPointerException) {
+                    //Just stop if the fragment is gone
+                    return
                 }
+
                 //Sanitise input - in case of a blank href
                 if (it.isBlank()) {
                     return@forEachIndexed
@@ -351,9 +386,17 @@ class FetchFragment : Fragment() {
                 }
             }
 
-            withContext(Dispatchers.Main) {
-                //Hide http_bar and show the http_pdf_bar
-                inFragment.http_pdf_bar.visibility = View.GONE
+            try {
+                withContext(Dispatchers.Main) {
+                    //Hide http_bar and show the http_pdf_bar
+                    inFragment.http_pdf_bar.visibility = View.GONE
+                }
+            }  catch (e: IllegalStateException) {
+                //Just stop if the fragment is gone
+                return
+            } catch (e: NullPointerException) {
+                //Just stop if the fragment is gone
+                return
             }
         }
     }
