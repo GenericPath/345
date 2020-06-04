@@ -12,9 +12,6 @@
         tools:layout="@layout/fragment_first">
 
         <action
-            android:id="@+id/action_FirstFragment_to_PDFViewFragment"
-            app:destination="@id/PDFViewFragment" />
-        <action
             android:id="@+id/action_FirstFragment_to_recyclerViewFragment"
             app:destination="@id/PDFListFragment" />
         <action

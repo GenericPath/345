@@ -27,11 +27,6 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //Go to example pdf view
-        view.findViewById<Button>(R.id.pdfTest).setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_PDFViewFragment)
-        }
-
         //Go to list view
         view.findViewById<Button>(R.id.listTest).setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_recyclerViewFragment)
