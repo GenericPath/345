@@ -1,8 +1,10 @@
 package com.otago.open
 
-/** Data Class for the PDF items in the [PDFListFragment]
- * @param imageResource the index of imageResource to use from project.
- * @param pathName the path of where the item is located.
- * @param pathType the type of item at the path.
+/**
+ * Data Class for the Course items in the [FetchFragment]
+ * @param imageResource The image from the project to use.
+ * @param courseName The name of the course.
+ * @param courseUrl The (probable) url to the course webpage.
+ * @param courseCode The paper code for the given course
  */
 data class CourseItem(val imageResource: Int, val courseName: String, val courseUrl: String, val courseCode: String)

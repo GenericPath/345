@@ -74,39 +74,74 @@ class FetchFragment : Fragment() {
     }
 }
 
+/**
+ * Coordinates fetching the course webpages from the university website
+ * Use [CourseService.startService] to begin
+ */
 object CourseService {
+    /**
+     * The coroutine scope for this coroutine service
+     */
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
+    /**
+     * Starts this service
+     *
+     * @param inFragment The instance of FetchFragment, to call in class functions
+     */
     fun startService(inFragment: FetchFragment) {
         coroutineScope.launch {
             runService(inFragment)
         }
     }
 
+    /**
+     * Runs this service
+     *
+     * @param inFragment The instance of FetchFragment, to call in class functions
+     */
     private suspend fun runService(inFragment: FetchFragment) {
         val links = ArrayList<CourseItem>()
-        //URL for the COSC papers page
-        val document: Document =
-            //TODO: Fix inappropriate blocking call
-            Jsoup.connect("https://www.otago.ac.nz/computer-science/study/otago673578.html")
-                .get()
-        //Content div
-        val contents = document.select("#content")
-        contents.forEach { docIt ->
-            //Links
-            val hrefs = docIt.select("a[href]")
-            hrefs.forEach { linkIt ->
-                val infoUrl = linkIt.attr("href")
-                val courseCode = infoUrl.substring(infoUrl.length - 7)
-                val courseUrl = "https://cs.otago.ac.nz/" + courseCode.toLowerCase(Locale.ROOT)
-                val courseName = linkIt.html()
-                //TODO: Update icon here
-                links.add(CourseItem(R.drawable.ic_folder, courseName, courseUrl, courseCode))
-                Log.d("Added Course", courseName + "with URL " + courseUrl)
+        try {
+            //URL for the COSC papers page
+            val document: Document =
+                //TODO: Fix inappropriate blocking call
+                Jsoup.connect("https://www.otago.ac.nz/computer-science/study/otago673578.html")
+                    .get()
+            //Content div
+            val contents = document.select("#content")
+            contents.forEach { docIt ->
+                //Links
+                val hrefs = docIt.select("a[href]")
+                hrefs.forEach { linkIt ->
+                    val infoUrl = linkIt.attr("href")
+                    val courseCode = infoUrl.substring(infoUrl.length - 7)
+                    val courseUrl = "https://cs.otago.ac.nz/" + courseCode.toLowerCase(Locale.ROOT)
+                    val courseName = linkIt.html()
+                    //TODO: Update icon here
+                    links.add(CourseItem(R.drawable.ic_folder, courseName, courseUrl, courseCode))
+                    Log.d("Added Course", courseName + "with URL " + courseUrl)
+                }
             }
+        } catch (e: MalformedURLException) {
+            //TODO: Do something here
+            e.printStackTrace()
+        } catch (e: HttpStatusException) {
+            //TODO: Do something here
+            e.printStackTrace()
+        } catch (e: UnsupportedMimeTypeException) {
+            //TODO: Do something here
+            e.printStackTrace()
+        } catch (e: SocketTimeoutException) {
+            //TODO: Do something here
+            e.printStackTrace()
+        } catch (e: IOException) {
+            //TODO: Do something here
+            e.printStackTrace()
         }
 
         withContext(Dispatchers.Main) {
+            //Update the UI on completion of paper fetch
             inFragment.http_bar.visibility = View.GONE
             inFragment.recycler_view.adapter =
                 CourseItemRecyclerViewAdapter(links.toList()) { link -> inFragment.selectType(link) }
@@ -122,6 +157,9 @@ object CourseService {
  * and then download each PDF.
  */
 object PDFService {
+    /**
+     * The coroutine scope for this coroutine service
+     */
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     /**
@@ -131,9 +169,9 @@ object PDFService {
      * @see fetchLinks for link logic
      * @see downloadPDF for downloading logic
      *
-     * @param url the url to search for pdf links from
-     * @param storage the location to store PDFs in
-     * @param inFragment the instance of FetchFragment, to call in class functions
+     * @param url The url to search for pdf links from
+     * @param storage The location to store PDFs in
+     * @param inFragment The instance of FetchFragment, to call in class functions
      */
     fun startService(baseUrl: String, url : String, storage : String, inFragment : FetchFragment) {
         //Launch coroutine
@@ -165,8 +203,8 @@ object PDFService {
 
     /**
      * Retrieve links from a table containing href elements.
-     * @param url the url to search for pdf links from
-     * @return list of urls for each PDF on the page
+     * @param url The url to search for pdf links from
+     * @return The list of urls for each PDF on the page
      */
     private fun fetchLinks(url : String): ArrayList<String> {
         val links = ArrayList<String>()
@@ -199,12 +237,12 @@ object PDFService {
 
     /**
      * Download each PDF from list of url endings retrieved from [fetchLinks].
-     * @param baseUrl the URL relative to which each item in links refers to a PDF
+     * @param baseUrl The URL relative to which each item in links refers to a PDF
      * @param links ArrayList of urls that correspond to the endings of urls to PDFs
-     * @param storage the location to store PDFs in
+     * @param storage The location to store PDFs in
      */
     private fun downloadPDF(baseUrl: String, links : ArrayList<String>, storage: String) {
-        Log.d("pdf downloading", baseUrl)
+        Log.d("PDF Downloading", baseUrl)
         links.forEach {
             //Sanitise input - in case of a blank href
             if (it.isBlank()) {
@@ -227,13 +265,13 @@ object PDFService {
                 return@forEach
             }
 
-            Log.d("pdf saving", "$storage/" + url.file)
+            Log.d("PDF Saving", "$storage/" + url.file)
             try {
                 val outStream = BufferedOutputStream(
                     FileOutputStream("$storage/" + url.file)
                 )
 
-                Log.d("pdf downloading", url.toExternalForm())
+                Log.d("PDF Downloading", url.toExternalForm())
 
                 //Open a HTTP connection
                 val conn = url.openConnection()
@@ -259,6 +297,5 @@ object PDFService {
                 return@forEach
             }
         }
-        Log.d("Download PDF", "reached")
     }
 }
