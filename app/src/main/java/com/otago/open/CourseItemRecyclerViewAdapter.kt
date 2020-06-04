@@ -22,9 +22,8 @@ class CourseItemRecyclerViewAdapter(
     private val list: List<CourseItem>,
     private val listener: (CourseItem) -> Unit
 ) : RecyclerView.Adapter<CourseItemRecyclerViewAdapter.ViewHolder>() {
-
     /**
-     * Entry point of [FetchFragment].
+     * Entry point of [CourseItemRecyclerViewAdapter].
      *
      * @param parent The parent recycler [ViewGroup]
      * @param viewType The type of view

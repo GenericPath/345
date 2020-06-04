@@ -14,7 +14,11 @@ class MainActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //Sets the layout
         setContentView(R.layout.activity_main)
+
+        //Sets the toolbar layout (incl. the app name).
         setSupportActionBar(toolbar)
     }
 }
