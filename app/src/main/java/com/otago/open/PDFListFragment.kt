@@ -1,19 +1,20 @@
 package com.otago.open
 
+import android.R.attr.data
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_item_list.*
 import java.io.File
-import kotlin.collections.ArrayList
+
 
 /**
  * A [Fragment] that generates each [PDFItem] to display.
@@ -41,14 +42,18 @@ class PDFListFragment : Fragment() {
         var size = 0
         try {
             val dir = File(args.dir)
-            for (i in 0 until dir.listFiles().size) {
-                if ((dir.listFiles()[i].extension == "pdf") or dir.listFiles()[i].isDirectory) {
-                    size++
+            if (dir.listFiles().size == 0) {
+                Toast.makeText(context, "No items in this folder", Toast.LENGTH_SHORT).show()
+            } else {
+                for (i in 0 until dir.listFiles().size) {
+                    if ((dir.listFiles()[i].extension == "pdf") or dir.listFiles()[i].isDirectory) {
+                        size++
+                    }
                 }
             }
         } catch (e : Exception) {
             Log.d("PDFListFragment", "Failed to count files")
-            // should show an error on screen or via toast
+            Toast.makeText(context, "No PDFs - the paper probably moved to blackboard due to COVID-19", Toast.LENGTH_SHORT).show()
         }
 
         val list = generateList(size)

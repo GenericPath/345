@@ -54,5 +54,9 @@
         android:id="@+id/FetchFragment"
         android:name="com.otago.open.FetchFragment"
         android:label="fragment_fetch"
-        tools:layout="@layout/fragment_fetch" />
+        tools:layout="@layout/fragment_fetch" >
+        <action
+            android:id="@+id/action_FetchFragment_to_PDFListFragment"
+            app:destination="@id/PDFListFragment" />
+    </fragment>
 </navigation>
