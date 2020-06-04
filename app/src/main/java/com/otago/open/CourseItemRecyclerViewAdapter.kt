@@ -25,6 +25,7 @@ class CourseItemRecyclerViewAdapter(
 
     /**
      * Entry point of [FetchFragment].
+     *
      * @param parent The parent recycler [ViewGroup]
      * @param viewType The type of view
      *

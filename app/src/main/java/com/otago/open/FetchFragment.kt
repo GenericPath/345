@@ -33,9 +33,11 @@ import kotlin.collections.ArrayList
 class FetchFragment : Fragment() {
     /**
      * Entry point of [FetchFragment].
+     *
      * @param inflater The inflater to parse the XML
      * @param container The base view that this fragment may be a subview of
      * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
+     *
      * @return The layout generated from the XML
      */
     override fun onCreateView(
@@ -48,6 +50,7 @@ class FetchFragment : Fragment() {
 
     /**
      * Handles the creation of this activity, and starts the coroutine service to list the courses
+     *
      * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
      */
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -58,6 +61,7 @@ class FetchFragment : Fragment() {
     /**
      * Currently just downloads the lecture PDFs and moved to the [PDFListFragment]
      * TODO: Check tutorials / lectures / etc
+     *
      * @param item The course to delve into
      */
     fun selectType(item: CourseItem) {
@@ -68,7 +72,7 @@ class FetchFragment : Fragment() {
         http_bar.visibility = View.VISIBLE
         recycler_view.visibility = View.GONE
 
-        //And this will take a paramater to replace "/lectures.php"
+        //And this will take a parameter to replace "/lectures.php"
         //And to replace "/lec"
         PDFService.startService(item.courseUrl, item.courseUrl + "/lectures.php", ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode + "/lec", this)
     }
@@ -203,7 +207,9 @@ object PDFService {
 
     /**
      * Retrieve links from a table containing href elements.
+     *
      * @param url The url to search for pdf links from
+     *
      * @return The list of urls for each PDF on the page
      */
     private fun fetchLinks(url : String): ArrayList<String> {
@@ -237,6 +243,7 @@ object PDFService {
 
     /**
      * Download each PDF from list of url endings retrieved from [fetchLinks].
+     *
      * @param baseUrl The URL relative to which each item in links refers to a PDF
      * @param links ArrayList of urls that correspond to the endings of urls to PDFs
      * @param storage The location to store PDFs in

@@ -2,6 +2,7 @@ package com.otago.open
 
 /**
  * Data Class for the Course items in the [FetchFragment]
+ *
  * @param imageResource The image from the project to use.
  * @param courseName The name of the course.
  * @param courseUrl The (probable) url to the course webpage.

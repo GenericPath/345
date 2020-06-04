@@ -1,14 +1,11 @@
 package com.otago.open
 
-import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 
 /**
@@ -17,6 +14,11 @@ import androidx.navigation.fragment.findNavController
 class FirstFragment : Fragment() {
     /**
      * Entry point of [FirstFragment].
+     *
+     * @param inflater The inflater to parse the XML
+     * @param container The base view that this fragment may be a subview of
+     * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
+     *
      * @return The layout generated from the XML
      */
     override fun onCreateView(
@@ -27,6 +29,13 @@ class FirstFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_first, container, false)
     }
 
+    /**
+     * Handles the creation of the views
+     * Adds handlers to the buttons
+     *
+     * @param view The current view
+     * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
