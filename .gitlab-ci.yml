@@ -24,6 +24,10 @@ default:
     - yes | android-sdk-linux/tools/bin/sdkmanager --licenses
     - set -o pipefail
 
+stages:
+ - build
+ - test
+
 lintDebug:
   stage: build
   tags:
@@ -42,10 +46,10 @@ assembleDebug:
     paths:
       - app/build/outputs/
 
-#debugTests:
-#  stage: test
-#  script:
-#    - ./gradlew -Pci --console=plain :app:testDebug
+debugTests:
+  stage: test
+  script:
+    - ./gradlew -Pci --console=plain :app:testDebug
 
 pages:
   stage: deploy
