@@ -16,7 +16,10 @@ import android.util.Log
  * Based on https://github.com/barteksc/AndroidPdfViewer
  */
 class PDFViewFragment : Fragment() {
-
+    /**
+     * Entry point of [PDFViewFragment].
+     * @return The layout generated from the XML
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,11 +31,7 @@ class PDFViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        /*
-            https://github.com/barteksc/AndroidPdfViewer
-         */
-        // on pixel 2 this dir is /data/data/com.otago.open/files
-        // use adb root; adb push report.pdf /data/data/com.otago.open/files
+        //https://github.com/barteksc/AndroidPdfViewer
         val file = File(arguments?.getString("pdf_file_name"))
         Log.d("viewPdf", file.absolutePath)
         val pdfView = view.findViewById<PDFView>(R.id.pdfView)

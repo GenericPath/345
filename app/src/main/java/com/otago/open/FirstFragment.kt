@@ -12,10 +12,13 @@ import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 
 /**
- * A simple [Fragment] subclass as the default destination in the navigation.
+ * The first navigation fragment the user sees
  */
 class FirstFragment : Fragment() {
-
+    /**
+     * Entry point of [FirstFragment].
+     * @return The layout generated from the XML
+     */
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?

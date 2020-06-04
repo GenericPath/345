@@ -20,7 +20,10 @@ import java.io.File
  * A [Fragment] that generates each [PDFItem] to display.
  */
 class PDFListFragment : Fragment() {
-
+    /**
+     * Entry point of [PDFListFragmentFragment].
+     * @return The layout generated from the XML
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

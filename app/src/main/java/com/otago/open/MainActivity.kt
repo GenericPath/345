@@ -10,6 +10,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    /**
+     * Delegates to default onCreate, and sets the content view
+     * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
