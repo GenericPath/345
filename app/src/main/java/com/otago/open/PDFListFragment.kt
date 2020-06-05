@@ -29,6 +29,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.fragment_fetch.*
 import kotlinx.android.synthetic.main.fragment_item_list.recycler_view
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +57,8 @@ class PDFListFragment : Fragment() {
      */
     private val args : PDFListFragmentArgs by navArgs()
 
+    private var visited = false
+
     /**
      * Entry point for creating a [PDFListFragment]
      * Ensure that the instance is retained on back button press
@@ -81,7 +84,7 @@ class PDFListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_recycler_view, container, false)
+        return inflater.inflate(R.layout.fragment_pdf_list_view, container, false)
     }
 
     /**
@@ -98,9 +101,20 @@ class PDFListFragment : Fragment() {
         if (args.courseUrl == null) {
             setRecyclerViewItems(true)
         } else {
-            PDFService.startService(args.courseUrl!!, args.courseUrl!! + "/" + args.courseContentPage!!, args.dir, this)
+            if (!visited) {
+                http_bar.visibility = View.VISIBLE
+                PDFService.startService(
+                    args.courseUrl!!,
+                    args.courseUrl!! + "/" + args.courseContentPage!!,
+                    args.dir,
+                    this
+                )
+            }
             setRecyclerViewItems(false)
         }
+
+        //Only download once
+        visited = true
     }
 
     /**
@@ -114,7 +128,7 @@ class PDFListFragment : Fragment() {
 
         //Only send the message if we want to
         if (list.isEmpty() and notify) {
-            Toast.makeText(context, "No items in this folder", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "No content yet", Toast.LENGTH_SHORT).show()
         }
 
         //Preserve the view state (i.e. the scroll position)
@@ -233,16 +247,17 @@ class PDFListFragment : Fragment() {
          * @param storage The location to store PDFs in
          * @param inFragment The instance of [FetchFragment], to call in class functions
          */
-        fun startService(
-            baseUrl: String,
-            url: String,
-            storage: String,
-            inFragment: PDFListFragment
-        ) {
+        fun startService(baseUrl: String, url: String, storage: String, inFragment: PDFListFragment) {
             //Launch coroutine
             coroutineScope.launch {
                 //Fetch the links
                 val links = fetchLinks(url)
+
+                withContext(Dispatchers.Main) {
+                    if (inFragment.http_bar != null) {
+                        inFragment.http_bar.visibility = View.GONE
+                    }
+                }
 
                 //If we don't have any links, don't do anything
                 if (links.size == 0) {
@@ -252,7 +267,6 @@ class PDFListFragment : Fragment() {
                             "No PDFs for that course - maybe it's not running or it went to blackboard due to COVID-19",
                             Toast.LENGTH_LONG
                         ).show()
-
                         //Go back
                         inFragment.fragmentManager?.popBackStack()
                     }

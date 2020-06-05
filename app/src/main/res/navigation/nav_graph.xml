@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/FirstFragment"
         android:name="com.otago.open.FirstFragment"
-        android:label="@string/first_fragment_label"
+
         tools:layout="@layout/fragment_first">
 
         <action
@@ -31,7 +31,7 @@
         android:id="@+id/PDFListFragment"
         android:name="com.otago.open.PDFListFragment"
         android:label="fragment_recycler_view"
-        tools:layout="@layout/fragment_recycler_view" >
+        tools:layout="@layout/fragment_pdf_list_view" >
         <argument
             android:name="dir"
             app:argType="string" />

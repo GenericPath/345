@@ -1,25 +1,9 @@
 <resources>
     <string name="app_name">OpenOtago</string>
-    <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment">0</string>
-    <string name="random_heading">Here is a random number between 0 and %d.</string>
-    <string name="toast_button_text">Toast</string>
-    <string name="random_button_text">Random</string>
-    <string name="count_button_text">Count</string>
-    <string name="toast_message">Hello Toast!</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="test_text">PDF Testing Page</string>
-    <string name="pdf_test">PDF Test</string>
-    <string name="list_test">List Test</string>
-    <string name="fetch_test">Fetch Test</string>
+    <string name="list_test">View Course PDFs</string>
+    <string name="fetch_test">Select Courses</string>
     <string name="open_pdf">Open PDF</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="fetch_text_default">Fetching...</string>
+    <string name="covid19_notice">Some papers are not using the cs.otago.ac.nz website for lecture and tutorial content due to the ongoing COVID-19 related disruption. The 200-level core papers appear to more or less have content</string>
 </resources>
