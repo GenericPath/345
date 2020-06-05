@@ -11,15 +11,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <ProgressBar
-        android:id="@+id/http_pdf_bar"
-        style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:progress="0"
-        android:visibility="gone" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:padding="4dp"

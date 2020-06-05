@@ -68,7 +68,7 @@ class PDFItemRecyclerViewAdapter(
         holder.itemView.setOnClickListener { listener(currentItem) }
 
         holder.imageView.setImageResource(currentItem.imageResource)
-        holder.textView1.text = currentItem.pathName
+        holder.textView1.text = currentItem.prettyPath
         holder.textView2.text = when (currentItem.pathType) {
             FileNavigatorType.PDF -> "PDF"
             FileNavigatorType.FOLDER -> "folder"
@@ -111,7 +111,7 @@ class PDFItemRecyclerViewAdapter(
         fun bind(item: PDFItem) {
             //Sets the image and text to the corresponding item's image and text
             imageView.setImageResource(item.imageResource)
-            textView1.text = item.pathName
+            textView1.text = item.prettyPath
             textView2.text = when (item.pathType) {
                 FileNavigatorType.PDF -> "PDF"
                 FileNavigatorType.FOLDER -> "folder"

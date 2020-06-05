@@ -18,13 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package com.otago.open
 
+import android.content.ContextWrapper
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
+import kotlinx.android.synthetic.main.content_main.*
 
 /**
  * The first navigation fragment the user sees
@@ -59,7 +62,8 @@ class FirstFragment : Fragment() {
 
         //Go to list view
         view.findViewById<Button>(R.id.listTest).setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_recyclerViewFragment)
+            val action = FirstFragmentDirections.actionFirstFragmentToRecyclerViewFragment(ContextWrapper(context).filesDir.absolutePath, null, null)
+            NavHostFragment.findNavController(nav_host_fragment).navigate(action)
         }
 
         //Go to fetch view

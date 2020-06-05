@@ -23,13 +23,9 @@
         android:name="com.otago.open.PDFViewFragment"
         android:label="fragment_third"
         tools:layout="@layout/fragment_pdf_view" >
-        <action
-            android:id="@+id/action_PDFViewFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
         <argument
             android:name="pdf_file_name"
-            app:argType="string"
-            android:defaultValue="/data/data/com.otago.open/files/report.pdf" />
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/PDFListFragment"
@@ -38,8 +34,18 @@
         tools:layout="@layout/fragment_recycler_view" >
         <argument
             android:name="dir"
-            app:argType="string"
-            android:defaultValue="/data/data/com.otago.open/files" />
+            app:argType="string" />
+
+        <argument
+            android:name="courseUrl"
+            app:nullable="true"
+            app:argType="string" />
+
+        <argument
+            android:name="courseContentPage"
+            app:nullable="true"
+            app:argType="string" />
+
         <action
             android:id="@+id/action_PDFListFragment_to_PDFViewFragment"
             app:destination="@id/PDFViewFragment" />

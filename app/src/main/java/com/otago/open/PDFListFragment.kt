@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package com.otago.open
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,8 +29,21 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.fragment_item_list.*
-import java.io.File
+import kotlinx.android.synthetic.main.fragment_item_list.recycler_view
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.jsoup.HttpStatusException
+import org.jsoup.Jsoup
+import org.jsoup.UnsupportedMimeTypeException
+import org.jsoup.nodes.Document
+import java.io.*
+import java.lang.IllegalStateException
+import java.lang.NullPointerException
+import java.net.MalformedURLException
+import java.net.SocketTimeoutException
+import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -67,15 +81,41 @@ class PDFListFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        recycler_view.layoutManager = LinearLayoutManager(context)
+        recycler_view.setHasFixedSize(true)
+
+        if (args.courseUrl == null) {
+            setRecyclerViewItems(true)
+        } else {
+            PDFService.startService(args.courseUrl!!, args.courseUrl!! + "/" + args.courseContentPage!!, args.dir, this)
+            setRecyclerViewItems(false)
+        }
+    }
+
+    /**
+     * Sets the items in the recycler view by enumerating the directory
+     *
+     * @param notify - Whether to send a toast about having no files present
+     */
+    private fun setRecyclerViewItems(notify: Boolean) {
         //Generate the file list
         val list = generateList()
+
+        //Only send the message if we want to
+        if (list.isEmpty() and notify) {
+            Toast.makeText(context, "No items in this folder", Toast.LENGTH_SHORT).show()
+        }
+
+        //Preserve the view state (i.e. the scroll position)
+        val recyclerViewState = recycler_view.layoutManager?.onSaveInstanceState()
 
         //Add to the recycler, with openFile as the click event handler
         recycler_view.adapter = PDFItemRecyclerViewAdapter(list) { item ->
             openFile(item)
         }
-        recycler_view.layoutManager = LinearLayoutManager(context)
-        recycler_view.setHasFixedSize(true)
+
+        //Restore the view state
+        recycler_view.layoutManager?.onRestoreInstanceState(recyclerViewState)
     }
 
     /**
@@ -90,7 +130,6 @@ class PDFListFragment : Fragment() {
 
         //Show a message if there are no files
         if (files?.size == 0) {
-            Toast.makeText(context, "No items in this folder", Toast.LENGTH_SHORT).show()
             return emptyList()
         }
 
@@ -103,7 +142,6 @@ class PDFListFragment : Fragment() {
 
         //Show a message if there are nothing of interest in the folder
         if (filteredDir.size == 0) {
-            Toast.makeText(context, "No PDFs or subfolders in this folder", Toast.LENGTH_SHORT).show()
             return emptyList()
         }
 
@@ -121,7 +159,22 @@ class PDFListFragment : Fragment() {
                 FileNavigatorType.PDF -> R.drawable.ic_pdf
             }
 
-            list += PDFItem(drawable, it.name, fileType)
+            //Give a pretty path to the file names
+            //i.e. replace let / tut etc, and trim the .pdf if it is a PDF
+            val prettyPath : String = when (fileType) {
+                FileNavigatorType.FOLDER -> when (it.name) {
+                    "lec" -> "Lectures"
+                    "tut" -> "Tutorial"
+                    else -> it.name
+                }
+                FileNavigatorType.PDF -> if (it.name.toLowerCase(Locale.ROOT).endsWith(".pdf")) {
+                    it.name.substring(0,it.name.length-4)
+                } else {
+                    it.name
+                }
+            }
+
+            list += PDFItem(drawable, it.name, prettyPath, fileType)
         }
 
         //Sort the list by filename
@@ -141,8 +194,190 @@ class PDFListFragment : Fragment() {
             }
             FileNavigatorType.FOLDER -> {
                 //If it's a subfolder then return to this but in a new instance
-                val action = PDFListFragmentDirections.actionPDFListFragmentSelf(args.dir + "/" + item.pathName)
+                val action = PDFListFragmentDirections.actionPDFListFragmentSelf(args.dir + "/" + item.pathName, null, null)
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
+            }
+        }
+    }
+
+    /**
+     * Coordinates fetching and downloading PDF files from a url.
+     * Use [PDFService.startService] to begin coroutines will fetch,
+     * and then download each PDF.
+     */
+    object PDFService {
+        /**
+         * The coroutine scope for this coroutine service
+         */
+        private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
+        /**
+         * Starts fetching and downloading PDFs.
+         * Utilises coroutines to run networking on a separate threads to UI.
+         *
+         * @see fetchLinks for link logic
+         * @see downloadPDF for downloading logic
+         *
+         * @param url The url to search for pdf links from
+         * @param storage The location to store PDFs in
+         * @param inFragment The instance of [FetchFragment], to call in class functions
+         */
+        fun startService(
+            baseUrl: String,
+            url: String,
+            storage: String,
+            inFragment: PDFListFragment
+        ) {
+            //Launch coroutine
+            coroutineScope.launch {
+                //Fetch the links
+                val links = fetchLinks(url)
+
+                //If we don't have any links, don't do anything
+                if (links.size == 0) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            inFragment.activity,
+                            "No PDFs for that course - maybe it's not running or it went to blackboard due to COVID-19",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        //Go back
+                        inFragment.fragmentManager?.popBackStack()
+                    }
+                    return@launch
+                }
+
+                //If we do have links, download them
+                downloadPDF(baseUrl, links, storage, inFragment)
+            }
+        }
+
+        /**
+         * Retrieve links from a table containing href elements.
+         *
+         * @param url The url to search for pdf links from
+         *
+         * @return The list of urls for each PDF on the page
+         */
+        private fun fetchLinks(url: String): ArrayList<String> {
+            val links = ArrayList<String>()
+            try {
+                val document: Document = Jsoup.connect(url).get()
+                val elements = document.select("tr a")
+                for (i in 0 until elements.size) {
+                    Log.d("Fetched Link", elements[i].attr("href"))
+                    links += elements[i].attr("href")
+                }
+            } catch (e: MalformedURLException) {
+                //TODO: Do something here
+                e.printStackTrace()
+            } catch (e: HttpStatusException) {
+                //TODO: Do something here
+                e.printStackTrace()
+            } catch (e: UnsupportedMimeTypeException) {
+                //TODO: Do something here
+                e.printStackTrace()
+            } catch (e: SocketTimeoutException) {
+                //TODO: Do something here
+                e.printStackTrace()
+            } catch (e: IOException) {
+                //TODO: Do something here
+                e.printStackTrace()
+            }
+
+            return links
+        }
+
+        /**
+         * Download each PDF from list of url endings retrieved from [fetchLinks].
+         *
+         * @param baseUrl The URL relative to which each item in links refers to a PDF
+         * @param links ArrayList of urls that correspond to the endings of urls to PDFs
+         * @param storage The location to store PDFs in
+         * @param inFragment The instance of [FetchFragment], to call in class functions
+         */
+        private suspend fun downloadPDF(baseUrl: String, links: ArrayList<String>, storage: String, inFragment: PDFListFragment) {
+            Log.d("PDF Downloading", baseUrl)
+
+            withContext (Dispatchers.Main) {
+                Toast.makeText(
+                    inFragment.activity,
+                    "Background download running",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            links.forEach{
+                //Sanitise input - in case of a blank href
+                if (it.isBlank()) {
+                    return@forEach
+                }
+
+                //Generate the URL for where the PDF is
+                val url = URL("$baseUrl/$it")
+
+                //Get the filename for the PDF
+                val fname = it.substring(it.lastIndexOf('/') + 1)
+
+                //Create a buffer for the HTTP requests
+                val buf = ByteArray(1024)
+
+                //Make the folder to save the lecture PDF into
+                File(storage).mkdirs()
+
+                //Create the file to save the lecture PDF into
+                val outFile  = File(storage, fname)
+                Log.d("PDF Saving", outFile.absolutePath)
+                try {
+                    outFile.createNewFile()
+                } catch (e: IOException) {
+                    //TODO: Something here
+                    e.printStackTrace()
+                    return@forEach
+                }
+
+                try {
+                    val outStream = BufferedOutputStream(
+                        FileOutputStream(outFile)
+                    )
+
+                    Log.d("PDF Downloading", url.toExternalForm())
+
+                    //Open a HTTP connection
+                    val conn = url.openConnection()
+                    val inStream = conn.getInputStream()
+
+                    //Read the result and write it to file
+                    var byteRead = inStream.read(buf)
+                    while (byteRead != -1) {
+                        outStream.write(buf, 0, byteRead)
+                        byteRead = inStream.read(buf)
+                    }
+
+                    //Close the file streams
+                    inStream.close()
+                    outStream.close()
+                } catch (e: FileNotFoundException) {
+                    //TODO: Something here
+                    e.printStackTrace()
+                    return@forEach
+                } catch (e: IOException) {
+                    //TODO: Something here
+                    e.printStackTrace()
+                    return@forEach
+                }
+
+                try {
+                    withContext(Dispatchers.Main) {
+                        //Show downloaded PDF in list
+                        inFragment.setRecyclerViewItems(false)
+                    }
+                } catch (e: NullPointerException) {
+                    //Ignore - we'll keep downloading
+                } catch (e: IllegalStateException) {
+                    //Ignore - we'll keep downloading
+                }
             }
         }
     }

@@ -21,8 +21,9 @@ package com.otago.open
 /**
  * Data class for the PDF items in the [PDFListFragment]
  *
- * @param imageResource the index of imageResource to use from project.
- * @param pathName the path of where the item is located.
- * @param pathType the type of item at the path.
+ * @param imageResource The index of imageResource to use from project.
+ * @param pathName The path of where the item is located.
+ * @param prettyPath The pretty name for the path
+ * @param pathType The type of item at the path.
  */
-data class PDFItem(val imageResource: Int, val pathName: String, val pathType: FileNavigatorType)
+data class PDFItem(val imageResource: Int, val pathName: String, val prettyPath: String, val pathType: FileNavigatorType)
