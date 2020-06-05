@@ -140,6 +140,8 @@ class FetchFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        //If we have items from a previous state, then just re-add them here
+        //Otherwise, try to restore, or if there is nothing to restore then just re-fetch
         if (adapterItems.isNotEmpty()) {
             Log.d("Fetch Activity Created", "Restoring from instance")
             setRecyclerItems(adapterItems)
@@ -153,6 +155,11 @@ class FetchFragment : Fragment() {
         }
     }
 
+    /**
+     * Sets the items in the recycler based on the provided [CourseItem]s
+     *
+     * @param links The links to add
+     */
     fun setRecyclerItems(links: List<CourseItem>) {
         adapterItems = links
         recycler_view.adapter =
