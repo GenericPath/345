@@ -1,11 +1,17 @@
 # OpenOtago - COSC345 Project
 [![pipeline status](https://altitude.otago.ac.nz/lwhitburn/c345-project/badges/master/pipeline.svg)](https://altitude.otago.ac.nz/lwhitburn/c345-project/-/commits/master)
 
-#### OpenOtago is an application to provide a mobile replacement to The Univeristy of Otago online resources.
+**OpenOtago is an application to provide a mobile replacement to Univeristy of Otago online resources.**
 
-See proposal at: https://altitude.otago.ac.nz/lwhitburn/c345-project/-/blob/master/proposal/proposal.pdf
+<table>
+<tr>
+    <td>see <a href="https://altitude.otago.ac.nz/lwhitburn/c345-project/-/blob/master/proposal/proposal.pdf">proposal</a></td> 
+</tr>
 
-See <a href="https://altitude.otago.ac.nz/lwhitburn/c345-project/-/jobs/artifacts/master/file/public/app/index.html?job=pages">latest documentation</a>
+<tr>
+    <td>see <a href="https://altitude.otago.ac.nz/lwhitburn/c345-project/-/jobs/artifacts/master/file/public/app/index.html?job=pages">latest documentation</a></td>
+</tr>
+</table>
 
 Created by
  - Burnie Lorimer (2367465)
@@ -13,9 +19,18 @@ Created by
  - Garth Wales (4861462) 
  - Louis Whitburn (2548261)
 
+---
+### **Commiting Code** 
+All submitted code runs on the CI pipeline defined in ```github-ci.yml```
+
+The pipeline:
+ - Tests build success (assembleDebug)    
+ - Tests code quality (lintDebug)
+ - Run unit tests (testDebug)
+ - Deploy documentation pages
 
 ----
-## *Alpha release*
+## *Alpha release* 
 Features fetching, storing and viewing lecture slides for Computer Science papers.
 
 **Requirements to build:**
@@ -35,3 +50,6 @@ Features fetching, storing and viewing lecture slides for Computer Science paper
  - ```./gradlew dokka```
  - open ```/app/build/dokka/app/index.html```
 
+ **To run tests**
+ - ```./gradlew lintDebug``` (Test code formatting)
+ - ```./gradlew testDebug``` (Run unit tests)
