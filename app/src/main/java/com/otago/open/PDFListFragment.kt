@@ -57,7 +57,18 @@ class PDFListFragment : Fragment() {
     private val args : PDFListFragmentArgs by navArgs()
 
     /**
-     * Entry point of [PDFListFragment].
+     * Entry point for creating a [PDFListFragment]
+     * Ensure that the instance is retained on back button press
+     *
+     * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
+     */
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
+    }
+
+    /**
+     * Entry point of the [PDFListFragment] view.
      *
      * @param inflater The inflater to parse the XML
      * @param container The base view that this fragment may be a subview of

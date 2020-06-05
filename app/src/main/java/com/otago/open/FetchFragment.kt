@@ -39,11 +39,11 @@ import org.jsoup.Jsoup
 import org.jsoup.UnsupportedMimeTypeException
 import org.jsoup.nodes.Document
 import java.io.*
+import java.lang.Exception
 import java.lang.IllegalStateException
 import java.lang.NullPointerException
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
-import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -51,8 +51,68 @@ import kotlin.collections.ArrayList
  * The class for the fragment to fetch the courses
  */
 class FetchFragment : Fragment() {
+    private var adapterItems : List<CourseItem> = emptyList()
+
     /**
-     * Entry point of [FetchFragment].
+     * Entry point for creating a [FetchFragment]
+     * Ensure that the instance is retained on back button press
+     *
+     * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
+     */
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
+    }
+
+    private fun restoreState(savedInstanceState: Bundle) {
+        try {
+            Log.d("Fetch Fragment Saving", "Restoring bundle")
+            val code = savedInstanceState.getStringArray("courseCodes")
+            val name = savedInstanceState.getStringArray("courseNames")
+            val url = savedInstanceState.getStringArray("courseUrls")
+            val resId = savedInstanceState.getIntArray("courseResIds")
+
+            val incomingItems = ArrayList<CourseItem>()
+
+            code!!.forEachIndexed { i, it ->
+                incomingItems.add(CourseItem(resId!![i], name!![i], url!![i], it!!))
+            }
+
+            setRecyclerItems(incomingItems.toList())
+        } catch (e: Exception) {
+            Log.d("Fetch Fragment Saving", "Bundle restore failed")
+            Toast.makeText(context, "Failed to load previous state - fetching again", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+            http_bar.visibility = View.VISIBLE
+            CourseService.startService(this)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        Log.d("Fetch Fragment Saving", "Creating bundle")
+        val code = Array(adapterItems.size) {
+            adapterItems[it].courseCode
+        }
+        val name = Array(adapterItems.size) {
+            adapterItems[it].courseName
+        }
+        val url = Array(adapterItems.size) {
+            adapterItems[it].courseUrl
+        }
+        val resId = IntArray(adapterItems.size) {
+            adapterItems[it].imageResource
+        }
+
+        outState.putStringArray("courseCodes", code)
+        outState.putStringArray("courseNames", name)
+        outState.putStringArray("courseUrls", url)
+        outState.putIntArray("courseResIds", resId)
+
+        super.onSaveInstanceState(outState)
+    }
+
+    /**
+     * Entry point of the [FetchFragment] view.
      *
      * @param inflater The inflater to parse the XML
      * @param container The base view that this fragment may be a subview of
@@ -65,7 +125,11 @@ class FetchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_fetch, container, false)
+        return if (view == null) {
+            inflater.inflate(R.layout.fragment_fetch, container, false)
+        } else {
+            view
+        }
     }
 
     /**
@@ -75,7 +139,30 @@ class FetchFragment : Fragment() {
      */
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        CourseService.startService(this)
+
+        if (adapterItems.isNotEmpty()) {
+            Log.d("Fetch Activity Created", "Restoring from instance")
+            setRecyclerItems(adapterItems)
+        } else if (savedInstanceState == null) {
+            Log.d("Fetch Activity Created", "Fetching")
+            http_bar.visibility = View.VISIBLE
+            CourseService.startService(this)
+        } else {
+            Log.d("Fetch Activity Created", "Restoring from saved state")
+            restoreState(savedInstanceState)
+        }
+    }
+
+    fun setRecyclerItems(links: List<CourseItem>) {
+        adapterItems = links
+        recycler_view.adapter =
+            CourseItemRecyclerViewAdapter(links) { link ->
+                selectType(
+                    link
+                )
+            }
+        recycler_view.layoutManager = LinearLayoutManager(context)
+        recycler_view.setHasFixedSize(true)
     }
 
     /**
@@ -84,7 +171,7 @@ class FetchFragment : Fragment() {
      *
      * @param item The course to delve into
      */
-    fun selectType(item: CourseItem) {
+    private fun selectType(item: CourseItem) {
         //will do something more interesting here later
         //And this will take a parameter to replace "lectures.php"
         //And to replace "/lec"
@@ -172,14 +259,7 @@ class FetchFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     //Update the UI on completion of paper fetch
                     inFragment.http_bar.visibility = View.GONE
-                    inFragment.recycler_view.adapter =
-                        CourseItemRecyclerViewAdapter(links.toList()) { link ->
-                            inFragment.selectType(
-                                link
-                            )
-                        }
-                    inFragment.recycler_view.layoutManager = LinearLayoutManager(inFragment.context)
-                    inFragment.recycler_view.setHasFixedSize(true)
+                    inFragment.setRecyclerItems(links.toList())
                 }
             } catch (e: IllegalStateException) {
                 //Just stop if the fragment is gone
