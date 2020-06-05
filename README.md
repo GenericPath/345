@@ -24,8 +24,8 @@ Created by
 All submitted code runs on the CI pipeline defined in ```github-ci.yml```
 
 The pipeline:
- - Test build success (assembleDebug)    
- - Test code quality (lintDebug)
+ - Tests build success (assembleDebug)    
+ - Tests code quality (lintDebug)
  - Run unit tests (testDebug)
  - Deploy documentation pages
 
@@ -50,3 +50,6 @@ Features fetching, storing and viewing lecture slides for Computer Science paper
  - ```./gradlew dokka```
  - open ```/app/build/dokka/app/index.html```
 
+ **To run tests**
+ - ```./gradlew lintDebug``` (Test code formatting)
+ - ```./gradlew testDebug``` (Run unit tests)
