@@ -5,7 +5,7 @@
 
 <table>
 <tr>
-    <td>see <a href="https://altitude.otago.ac.nz/lwhitburn/c345-project/-/blob/master/proposal/proposal.pdf">proposal</a></td> 
+    <td>see <a href="https://github.com/GenericPath/345/blob/master/proposal/proposal.pdf">proposal</a></td> 
 </tr>
 
 <tr>
