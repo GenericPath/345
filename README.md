@@ -1,5 +1,5 @@
 # OpenOtago - COSC345 Project
-[![pipeline status](https://altitude.otago.ac.nz/lwhitburn/c345-project/badges/master/pipeline.svg)](https://altitude.otago.ac.nz/lwhitburn/c345-project/-/commits/master)
+![Test](https://github.com/GenericPath/345/workflows/Test/badge.svg)![Build & Publish](https://github.com/GenericPath/345/workflows/Build%20&%20Publish/badge.svg)
 
 **OpenOtago is an application to provide a mobile replacement to Univeristy of Otago online resources.**
 
@@ -9,25 +9,26 @@
 </tr>
 
 <tr>
-    <td>see <a href="https://altitude.otago.ac.nz/lwhitburn/c345-project/-/jobs/artifacts/master/file/public/app/index.html?job=pages">latest documentation</a></td>
+    <td>see (to be updated)<a href="https://altitude.otago.ac.nz/lwhitburn/c345-project/-/jobs/artifacts/master/file/public/app/index.html?job=pages">latest documentation</a></td>
 </tr>
 </table>
 
 Created by
- - Burnie Lorimer (2367465)
  - Damian Soo (6551336)
  - Garth Wales (4861462) 
  - Louis Whitburn (2548261)
 
 ---
 ### **Commiting Code** 
-All submitted code runs on the CI pipeline defined in ```github-ci.yml```
+All submitted code runs on the CI pipelines defined in ```.github/workflows/```
 
-The pipeline:
- - Tests build success (assembleDebug)    
+ ```test.yml```
  - Tests code quality (lintDebug)
  - Run unit tests (testDebug)
- - Deploy documentation pages
+ 
+ ```buildPublish.yml```
+ - Tests debug build success (assembleDebug)    
+ - Deploy documentation pages (dokka)
 
 ----
 ## *Alpha release* 
@@ -37,7 +38,7 @@ Features fetching, storing and viewing lecture slides for Computer Science paper
  - Java Environment
  - Android SDK version 29 
 
-**To build application:**
+**To build application locally:**
 - Clone the repository
 - *Option 1* - Android Studio:
     - Open with Android Studio, wait for initial gradle setup
@@ -46,10 +47,10 @@ Features fetching, storing and viewing lecture slides for Computer Science paper
     - ```./gradlew assembleDebug ```
     - install ```/app/build/outputs/apk/debug/app-debug.apk``` onto device
 
-**To build documentation:**
+**To build documentation locally:**
  - ```./gradlew dokka```
  - open ```/app/build/dokka/app/index.html```
 
- **To run tests**
+ **To run tests locally:**
  - ```./gradlew lintDebug``` (Test code formatting)
  - ```./gradlew testDebug``` (Run unit tests)
