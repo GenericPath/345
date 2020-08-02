@@ -173,17 +173,13 @@ class FetchFragment : Fragment() {
     }
 
     /**
-     * Currently just downloads the lecture PDFs and moved to the [PDFListFragment]
-     * TODO: Check tutorials / lectures / etc
+     * Currently just downloads the lecture PDFs and moved to the [PDFListFragment
      *
      * @param item The course to delve into
      */
     private fun selectType(item: CourseItem) {
-        //will do something more interesting here later
-        //And this will take a parameter to replace "lectures.php"
-        //And to replace "/lec"
         val action =
-            FetchFragmentDirections.actionFetchFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode + "/lec", item.courseUrl, "lectures.php")
+            FetchFragmentDirections.actionFetchFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode, item.courseUrl, "")
         NavHostFragment.findNavController(nav_host_fragment)
             .navigate(action)
     }
@@ -242,7 +238,7 @@ class FetchFragment : Fragment() {
                                 courseCode
                             )
                         )
-                        Log.d("Added Course", courseName + "with URL " + courseUrl)
+                        Log.d("Added Course", courseName + " with URL " + courseUrl)
                     }
                 }
             } catch (e: MalformedURLException) {
