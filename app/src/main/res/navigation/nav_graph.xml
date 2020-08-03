@@ -21,7 +21,7 @@
     <fragment
         android:id="@+id/PDFViewFragment"
         android:name="com.otago.open.PDFViewFragment"
-        android:label="fragment_third"
+        android:label="fragment_pdf"
         tools:layout="@layout/fragment_pdf_view" >
         <argument
             android:name="pdf_file_name"
@@ -52,6 +52,9 @@
         <action
             android:id="@+id/action_PDFListFragment_self"
             app:destination="@id/PDFListFragment" />
+        <action
+            android:id="@+id/action_PDFListFragment_to_MarkViewFragment"
+            app:destination="@id/MarkViewFragment" />
     </fragment>
     <fragment
         android:id="@+id/FetchFragment"
@@ -61,5 +64,15 @@
         <action
             android:id="@+id/action_FetchFragment_to_PDFListFragment"
             app:destination="@id/PDFListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/MarkViewFragment"
+        android:name="com.otago.open.MarkViewFragment"
+        android:label="fragment_mark"
+        tools:layout="@layout/fragment_mark_view" >
+        <argument
+            android:name="post_url"
+            app:argType="string" />
     </fragment>
 </navigation>

@@ -100,19 +100,17 @@ class PDFListFragment : Fragment() {
 
         if (args.courseUrl == null) {
             setRecyclerViewItems(true)
-        } else {
-            if (!visited) {
-                http_bar.visibility = View.VISIBLE
-                PDFService.startService(
-                    args.courseUrl!!,
-                    args.courseUrl!! + "/" + args.courseContentPage!!,
-                    args.dir,
-                    this,
-                    args.courseContentPage.isNullOrBlank() //Only look for folders on the index page!
-                )
-            }
-            setRecyclerViewItems(false)
+        } else if (!visited) {
+            http_bar.visibility = View.VISIBLE
+            PDFService.startService(
+                args.courseUrl!!,
+                args.courseUrl!! + "/" + args.courseContentPage!!,
+                args.dir,
+                this,
+                args.courseContentPage.isNullOrBlank() //Only look for folders on the index page!
+            )
         }
+        setRecyclerViewItems(false)
 
         //Only download once
         visited = true
@@ -229,12 +227,27 @@ class PDFListFragment : Fragment() {
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
             FileNavigatorType.FOLDER -> {
-                //If it's a subfolder then return to this but in a new instance
-                //But first check if this is based on a URL or just folders
-                val action = if (args.courseUrl.isNullOrEmpty()) {
-                    PDFListFragmentDirections.actionPDFListFragmentSelf(args.dir + "/" + item.pathName, null, null)
-                } else {
-                    PDFListFragmentDirections.actionPDFListFragmentSelf(args.dir + "/" + item.pathName, args.courseUrl, args.courseContentPage + "/" + item.pathName)
+                //Otherwise navigate to the subdirectory
+                val action = if (args.courseUrl.isNullOrBlank()) {
+                    val urlGuess = "https://cs.otago.ac.nz/" + item.pathName.toLowerCase(Locale.ROOT)
+                    Log.d("Cache Navigate URL", urlGuess)
+                    PDFListFragmentDirections.actionPDFListFragmentSelf(
+                        args.dir + "/" + item.pathName,
+                        urlGuess,
+                        ""
+                    )
+                } else if (item.pathName.equals("marks.php")) {
+                    //Sometimes makes a // as apposed to a / here but it seems to work
+                    val postUrl = args.courseUrl + "/" + args.courseContentPage + "/" + item.pathName
+                    Log.d("Mark View POST", postUrl)
+                    PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(postUrl)
+                }
+                else {
+                    PDFListFragmentDirections.actionPDFListFragmentSelf(
+                        args.dir + "/" + item.pathName,
+                        args.courseUrl,
+                        args.courseContentPage + "/" + item.pathName
+                    )
                 }
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
