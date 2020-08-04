@@ -26,25 +26,37 @@
         <argument
             android:name="pdf_file_name"
             app:argType="string" />
+
+        <argument
+            android:name="url"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/PDFListFragment"
         android:name="com.otago.open.PDFListFragment"
         android:label="fragment_recycler_view"
         tools:layout="@layout/fragment_pdf_list_view" >
+
         <argument
-            android:name="dir"
+            android:name="paperFolder"
             app:argType="string" />
 
         <argument
-            android:name="courseUrl"
-            app:nullable="true"
+            android:name="paperUrl"
             app:argType="string" />
 
         <argument
-            android:name="courseContentPage"
-            app:nullable="true"
+            android:name="paperSubName"
             app:argType="string" />
+
+        <argument
+            android:name="paperCode"
+            app:argType="string" />
+
+        <argument
+            android:name="listFiles"
+            app:argType="boolean" />
 
         <action
             android:id="@+id/action_PDFListFragment_to_PDFViewFragment"

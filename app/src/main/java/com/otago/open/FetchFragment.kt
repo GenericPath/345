@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2020 Burnie Lorimer, Damian Soo, Garth Wales, Louis Whitburn
+Copyright (C) 2020 Damian Soo, Garth Wales, Louis Whitburn
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_fetch.*
@@ -179,7 +180,7 @@ class FetchFragment : Fragment() {
      */
     private fun selectType(item: CourseItem) {
         val action =
-            FetchFragmentDirections.actionFetchFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode, item.courseUrl, "")
+            FetchFragmentDirections.actionFetchFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode, item.courseUrl, "", item.courseCode, false)
         NavHostFragment.findNavController(nav_host_fragment)
             .navigate(action)
     }

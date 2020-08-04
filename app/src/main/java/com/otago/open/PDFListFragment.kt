@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2020 Burnie Lorimer, Damian Soo, Garth Wales, Louis Whitburn
+Copyright (C) 2020 Damian Soo, Garth Wales, Louis Whitburn
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -40,11 +40,10 @@ import org.jsoup.Jsoup
 import org.jsoup.UnsupportedMimeTypeException
 import org.jsoup.nodes.Document
 import java.io.*
-import java.lang.IllegalStateException
-import java.lang.NullPointerException
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
+import java.nio.file.Files
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -52,6 +51,8 @@ import kotlin.collections.ArrayList
  * A [Fragment] that generates each [PDFItem] to display.
  */
 class PDFListFragment : Fragment() {
+    data class FetchResult(val paperFolder: String, val paperUrl: String, val pathSubName: String, val type: FileNavigatorType)
+
     /**
      * Args to pass in directory navigated to
      */
@@ -98,19 +99,15 @@ class PDFListFragment : Fragment() {
         recycler_view.layoutManager = LinearLayoutManager(context)
         recycler_view.setHasFixedSize(true)
 
-        if (args.courseUrl == null) {
+        if (args.listFiles) {
+            setRecyclerViewItems(false)
+        } else if (args.paperCode.isBlank()) {
             setRecyclerViewItems(true)
         } else if (!visited) {
             http_bar.visibility = View.VISIBLE
-            PDFService.startService(
-                args.courseUrl!!,
-                args.courseUrl!! + "/" + args.courseContentPage!!,
-                args.dir,
-                this,
-                args.courseContentPage.isNullOrBlank() //Only look for folders on the index page!
-            )
+            PDFService.startService(args.paperFolder, args.paperUrl, args.paperSubName,this, args.paperSubName.isBlank()) //Only look for folders on the index page!
+            setRecyclerViewItems(false)
         }
-        setRecyclerViewItems(false)
 
         //Only download once
         visited = true
@@ -123,8 +120,10 @@ class PDFListFragment : Fragment() {
      */
     private fun setRecyclerViewItems(notify: Boolean) {
         //Generate the file list
-        val list = generateList()
+        setRecyclerViewItems(notify, generateList())
+    }
 
+    private fun setRecyclerViewItems(notify: Boolean, list: List<PDFItem>) {
         //Only send the message if we want to
         if (list.isEmpty() and notify) {
             Toast.makeText(context, "No content yet", Toast.LENGTH_SHORT).show()
@@ -148,9 +147,9 @@ class PDFListFragment : Fragment() {
      * @return The list of [PDFItem]s in the specified directory
      */
     private fun generateList(): List<PDFItem> {
-        val dir = File(args.dir)
-        val filteredDir = ArrayList<File>()
-        val files = dir.listFiles()
+        val currentFolder = File(args.paperFolder + "/" + args.paperSubName)
+        val result = ArrayList<FetchResult>()
+        val files = currentFolder.listFiles()
 
         //Show a message if there are no files
         if (files?.size == 0) {
@@ -159,60 +158,20 @@ class PDFListFragment : Fragment() {
 
         //Only select PDFs and directories
         files?.forEach {
-            if ((it.extension.toLowerCase(Locale.ROOT) == "pdf") or it.isDirectory) {
-                filteredDir += it
+            if (it.extension.toLowerCase(Locale.ROOT) == "pdf") {
+                result += FetchResult(args.paperFolder, args.paperUrl, it.absolutePath.replaceFirst(args.paperFolder, ""), FileNavigatorType.PDF)
+            } else if (it.isDirectory) {
+                result += FetchResult(args.paperFolder, args.paperUrl, it.absolutePath.replaceFirst(args.paperFolder, ""), FileNavigatorType.FOLDER)
             }
         }
 
         //Show a message if there are nothing of interest in the folder
-        if (filteredDir.size == 0) {
+        if (result.size == 0) {
             return emptyList()
         }
 
         //Create a list of PDF (or folder) items
-        val list = ArrayList<PDFItem>()
-        filteredDir.forEach {
-            val fileType = if (it.isDirectory) {
-                FileNavigatorType.FOLDER
-            } else {
-                FileNavigatorType.PDF
-            }
-
-            val drawable = when (fileType) {
-                FileNavigatorType.FOLDER -> R.drawable.ic_folder
-                FileNavigatorType.PDF -> R.drawable.ic_pdf
-            }
-
-            //Give a pretty path to the file names
-            //i.e. replace lectures.php / tutorials.php etc, and trim the .pdf if it is a PDF
-            val prettyPath : String = when (fileType) {
-                FileNavigatorType.FOLDER -> when (it.name) {
-                    "lectures.php" -> "Lectures"
-                    "tutorials.php" -> "Tutorials"
-                    "labs.php" -> "Labs"
-                    "assignments.php" -> "Assignments"
-                    "assessment.php" -> "Assessment"
-                    "resources.php" -> "Resources"
-                    "staff.php" -> "Staff"
-                    "marks.php" -> "Marks"
-                    else -> if (it.name.endsWith(".php")) {
-                        it.name.substring(0, it.name.length-4)
-                     } else {
-                        it.name
-                    }
-                }
-                FileNavigatorType.PDF -> if (it.name.toLowerCase(Locale.ROOT).endsWith(".pdf")) {
-                    it.name.substring(0,it.name.length-4)
-                } else {
-                    it.name
-                }
-            }
-
-            list += PDFItem(drawable, it.name, prettyPath, fileType)
-        }
-
-        //Sort the list by filename
-        return list.toList()
+        return PDFService.generatePdfItems(result)
     }
 
     /**
@@ -223,31 +182,38 @@ class PDFListFragment : Fragment() {
         when (item.pathType) {
             FileNavigatorType.PDF -> {
                 //If is's a PDF then open the PDF in the PDFViewFragment
-                val action = PDFListFragmentDirections.actionPDFListFragmentToPDFViewFragment(args.dir + "/" + item.pathName)
+                val action = PDFListFragmentDirections.actionPDFListFragmentToPDFViewFragment(item.paperFolder + "/" + item.pathSubName, item.paperUrl + "/" + item.pathSubName)
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
             FileNavigatorType.FOLDER -> {
                 //Otherwise navigate to the subdirectory
-                val action = if (args.courseUrl.isNullOrBlank()) {
-                    val urlGuess = "https://cs.otago.ac.nz/" + item.pathName.toLowerCase(Locale.ROOT)
-                    Log.d("Cache Navigate URL", urlGuess)
-                    PDFListFragmentDirections.actionPDFListFragmentSelf(
-                        args.dir + "/" + item.pathName,
-                        urlGuess,
-                        ""
-                    )
-                } else if (item.pathName.equals("marks.php")) {
-                    //Sometimes makes a // as apposed to a / here but it seems to work
-                    val postUrl = args.courseUrl + "/" + args.courseContentPage + "/" + item.pathName
-                    Log.d("Mark View POST", postUrl)
-                    PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(postUrl)
-                }
-                else {
-                    PDFListFragmentDirections.actionPDFListFragmentSelf(
-                        args.dir + "/" + item.pathName,
-                        args.courseUrl,
-                        args.courseContentPage + "/" + item.pathName
-                    )
+                val action = when {
+                    args.paperCode.isBlank() -> {
+                        val codeGuess = item.pathSubName.substringAfterLast('/').toLowerCase(Locale.ROOT)
+                        val urlGuess = "https://cs.otago.ac.nz/$codeGuess"
+                        PDFListFragmentDirections.actionPDFListFragmentSelf(
+                            item.paperFolder,
+                            urlGuess,
+                            item.pathSubName,
+                            codeGuess,
+                            args.listFiles
+                        )
+                    }
+                    item.pathSubName.endsWith("marks.php") -> {
+                        //Sometimes makes a // as apposed to a / here but it seems to work
+                        val postUrl = item.paperUrl + "/" + item.pathSubName
+                        Log.d("Mark View POST", postUrl)
+                        PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(postUrl)
+                    }
+                    else -> {
+                        PDFListFragmentDirections.actionPDFListFragmentSelf(
+                            item.paperFolder,
+                            item.paperUrl,
+                            item.pathSubName,
+                            args.paperCode,
+                            args.listFiles
+                        )
+                    }
                 }
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
@@ -260,7 +226,6 @@ class PDFListFragment : Fragment() {
      * and then download each PDF.
      */
     object PDFService {
-        data class FetchResult(val url: String, val type: FileNavigatorType)
         /**
          * The coroutine scope for this coroutine service
          */
@@ -277,23 +242,66 @@ class PDFListFragment : Fragment() {
          * @param storage The location to store PDFs in
          * @param inFragment The instance of [FetchFragment], to call in class functions
          */
-        fun startService(baseUrl: String, url: String, storage: String, inFragment: PDFListFragment, doFolders: Boolean) {
+        fun startService(paperFolder: String, paperUrl: String, paperSubName: String, inFragment: PDFListFragment, doFolders: Boolean) {
             //Launch coroutine
             coroutineScope.launch {
                 //Fetch the links
-                val fetchedlinks = fetchLinks(url, doFolders)
+                val fetchedLinks = fetchLinks(paperFolder, paperUrl, paperSubName, doFolders)
+                val pdfs = generatePdfItems(fetchedLinks)
 
                 withContext(Dispatchers.Main) {
                     if (inFragment.http_bar != null) {
                         inFragment.http_bar.visibility = View.GONE
                     }
+                    inFragment.setRecyclerViewItems(true, pdfs)
                 }
 
                 //If we do have links, download them
-                if (fetchedlinks.size > 0) {
-                    downloadPDF(baseUrl, fetchedlinks, storage, inFragment)
+                if (fetchedLinks.size > 0) {
+                    downloadPDF(fetchedLinks, inFragment)
                 }
+
             }
+        }
+
+        fun generatePdfItems(fetched: List<FetchResult>) : List<PDFItem> {
+            val pdfs = ArrayList<PDFItem>(fetched.size)
+            fetched.forEach {
+                val drawable = when (it.type) {
+                    FileNavigatorType.FOLDER -> R.drawable.ic_folder
+                    FileNavigatorType.PDF -> R.drawable.ic_pdf
+                }
+
+                val fileName = it.pathSubName.substringAfterLast("/")
+                //Give a pretty path to the file names
+                //i.e. replace lectures.php / tutorials.php etc, and trim the .pdf if it is a PDF
+                val prettyPath: String = when (it.type) {
+                    FileNavigatorType.FOLDER -> when (fileName) {
+                        "lectures.php" -> "Lectures"
+                        "tutorials.php" -> "Tutorials"
+                        "labs.php" -> "Labs"
+                        "assignments.php" -> "Assignments"
+                        "assessment.php" -> "Assessment"
+                        "resources.php" -> "Resources"
+                        "staff.php" -> "Staff"
+                        "marks.php" -> "Marks"
+                        else -> if (fileName.endsWith(".pdf", ignoreCase = true)) {
+                            fileName.replace(".php", "", ignoreCase = true)
+                        } else {
+                            fileName
+                        }
+                    }
+                    FileNavigatorType.PDF -> if (fileName.endsWith(".php", ignoreCase = true)) {
+                        fileName.replace(".pdf", "", ignoreCase = true)
+                    } else {
+                        fileName
+                    }
+                }
+
+                pdfs.add(PDFItem(drawable, it.type, it.paperFolder, it.paperUrl, it.pathSubName, prettyPath))
+            }
+
+            return pdfs
         }
 
         /**
@@ -303,23 +311,23 @@ class PDFListFragment : Fragment() {
          *
          * @return The list of urls for each PDF on the page
          */
-        private fun fetchLinks(url: String, doFolders: Boolean): ArrayList<FetchResult> {
+        private fun fetchLinks(paperFolder: String, paperUrl: String, paperSubName: String, doFolders: Boolean): ArrayList<FetchResult> {
             val links = ArrayList<FetchResult>()
             try {
-                val document: Document = Jsoup.connect(url).get()
+                val document: Document = Jsoup.connect("$paperUrl/$paperSubName").get()
 
                 //PDF links
-                document.select("tr a").forEach { it ->
+                document.select("tr a").forEach {
                     val href = it.attr("href")
                     if (href.endsWith(".pdf")) {
                         Log.d("Fetched Link", href)
-                        links += FetchResult(href, FileNavigatorType.PDF)
+                        links += FetchResult(paperFolder, paperUrl, "$paperSubName/$href", FileNavigatorType.PDF)
                     }
                 }
 
                 if (doFolders) {
                     //Nav links
-                    document.select("div#coursepagenavmenu li a").forEach { it ->
+                    document.select("div#coursepagenavmenu li a").forEach {
                         val href = it.attr("href")
                         val trimHref = if (href.startsWith("./")) {
                             href.substring(2)
@@ -328,8 +336,8 @@ class PDFListFragment : Fragment() {
                         }
 
                         //Don't fetch the home page (we're already there)
-                        if (!trimHref.equals("index.php")) {
-                            links += FetchResult(trimHref, FileNavigatorType.FOLDER)
+                        if (trimHref != "index.php") {
+                            links += FetchResult(paperFolder, paperUrl, "$paperSubName/$href", FileNavigatorType.FOLDER)
                             Log.d("Fetched Link (URL)", trimHref)
                         }
                     }
@@ -363,8 +371,8 @@ class PDFListFragment : Fragment() {
          * @param storage The location to store PDFs in
          * @param inFragment The instance of [FetchFragment], to call in class functions
          */
-        private suspend fun downloadPDF(baseUrl: String, links: ArrayList<FetchResult>, storage: String, inFragment: PDFListFragment) {
-            Log.d("PDF Downloading", baseUrl)
+        private suspend fun downloadPDF(links: ArrayList<FetchResult>, inFragment: PDFListFragment) {
+            //Log.d("PDF Downloading", dataFolder)
 
             withContext (Dispatchers.Main) {
                 Toast.makeText(
@@ -377,25 +385,14 @@ class PDFListFragment : Fragment() {
             links.forEach{
                 //If it's a folder then we just need to create it
                 if (it.type == FileNavigatorType.FOLDER) {
-                    val dirName = storage + "/" + it.url
+                    val dirName = it.paperFolder + "/" + it.pathSubName
                     Log.d("Creating Folder ", dirName)
                     File(dirName).mkdirs()
 
-                    //Make sure to set view items
-                    try {
-                        withContext(Dispatchers.Main) {
-                            //Show downloaded PDF in list
-                            inFragment.setRecyclerViewItems(false)
-                        }
-                    } catch (e: NullPointerException) {
-                        //Ignore - we'll keep downloading
-                    } catch (e: IllegalStateException) {
-                        //Ignore - we'll keep downloading
-                    }
                     return@forEach
                 }
 
-                val pdfUrl = it.url
+                val pdfUrl = it.paperUrl + "/" + it.pathSubName
 
                 //Sanitise input - in case of a blank href
                 if (pdfUrl.isBlank()) {
@@ -403,19 +400,20 @@ class PDFListFragment : Fragment() {
                 }
 
                 //Generate the URL for where the PDF is
-                val url = URL("$baseUrl/$pdfUrl")
+                val url = URL(pdfUrl)
 
                 //Get the filename for the PDF
-                val fname = pdfUrl.substring(pdfUrl.lastIndexOf('/') + 1)
+                val fileName = pdfUrl.substring(pdfUrl.lastIndexOf('/') + 1)
+
+                val saveFolder = it.paperFolder + "/" + it.pathSubName.substring(0, it.pathSubName.lastIndexOf('/'))
+                //Make the folder to save the lecture PDF into
+                File(saveFolder).mkdirs()
 
                 //Create a buffer for the HTTP requests
                 val buf = ByteArray(1024)
 
-                //Make the folder to save the lecture PDF into
-                File(storage).mkdirs()
-
                 //Create the file to save the lecture PDF into
-                val outFile  = File(storage, fname)
+                val outFile  = File(saveFolder, "$fileName.download")
                 Log.d("PDF Saving", outFile.absolutePath)
                 try {
                     outFile.createNewFile()
@@ -446,6 +444,8 @@ class PDFListFragment : Fragment() {
                     //Close the file streams
                     inStream.close()
                     outStream.close()
+
+                    Files.move(outFile.toPath(), File(saveFolder, fileName).toPath())
                 } catch (e: FileNotFoundException) {
                     //TODO: Something here
                     e.printStackTrace()
@@ -454,17 +454,6 @@ class PDFListFragment : Fragment() {
                     //TODO: Something here
                     e.printStackTrace()
                     return@forEach
-                }
-
-                try {
-                    withContext(Dispatchers.Main) {
-                        //Show downloaded PDF in list
-                        inFragment.setRecyclerViewItems(false)
-                    }
-                } catch (e: NullPointerException) {
-                    //Ignore - we'll keep downloading
-                } catch (e: IllegalStateException) {
-                    //Ignore - we'll keep downloading
                 }
             }
         }

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2020 Burnie Lorimer, Damian Soo, Garth Wales, Louis Whitburn
+Copyright (C) 2020 Damian Soo, Garth Wales, Louis Whitburn
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

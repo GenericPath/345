@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2020 Burnie Lorimer, Damian Soo, Garth Wales, Louis Whitburn
+Copyright (C) 2020 Damian Soo, Garth Wales, Louis Whitburn
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,4 +26,4 @@ package com.otago.open
  * @param prettyPath The pretty name for the path
  * @param pathType The type of item at the path.
  */
-data class PDFItem(val imageResource: Int, val pathName: String, val prettyPath: String, val pathType: FileNavigatorType)
+data class PDFItem(val imageResource: Int, val pathType: FileNavigatorType, val paperFolder: String, val paperUrl: String, val pathSubName: String, val prettyPath: String)

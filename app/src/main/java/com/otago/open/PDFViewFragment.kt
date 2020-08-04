@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2020 Burnie Lorimer, Damian Soo, Garth Wales, Louis Whitburn
+Copyright (C) 2020 Damian Soo, Garth Wales, Louis Whitburn
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package com.otago.open
 
 //https://github.com/barteksc/AndroidPdfViewer
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -58,6 +59,42 @@ class PDFViewFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_pdf_view, container, false)
     }
 
+    private fun showPdf(file: File, view: View) {
+        //Displays a PDF
+        val pdfView = view.findViewById<PDFView>(R.id.pdfView)
+
+        try {
+            Log.d("View PDF", file.absolutePath)
+            pdfView.fromFile(file).load()
+        } catch (e : IOException) {
+            //If it fails send a toast and go back
+            Toast.makeText(context, "Couldn't load PDF", Toast.LENGTH_SHORT).show()
+            activity?.finish()
+        } catch (e: Exception) {
+            //If it fails send a toast and go back
+            Toast.makeText(context, "PDF corrupt?", Toast.LENGTH_SHORT).show()
+            activity?.finish()
+        }
+    }
+
+    private fun showPdf(url: String, view: View) {
+        //Displays a PDF
+        val pdfView = view!!.findViewById<PDFView>(R.id.pdfView)
+
+        try {
+            Log.d("View PDF (URL)", url)
+            pdfView.fromUri(Uri.parse(url)).load()
+        } catch (e : IOException) {
+            //If it fails send a toast and go back
+            Toast.makeText(context, "Couldn't load PDF", Toast.LENGTH_SHORT).show()
+            activity?.finish()
+        } catch (e: Exception) {
+            //If it fails send a toast and go back
+            Toast.makeText(context, "PDF corrupt?", Toast.LENGTH_SHORT).show()
+            activity?.finish()
+        }
+    }
+
     /**
      * Handles the creation of the views.
      * Displays the PDF
@@ -69,19 +106,14 @@ class PDFViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //Displays a PDF
-        val pdfView = view.findViewById<PDFView>(R.id.pdfView)
-        try {
-            val file = File(args.pdfFileName)
-            Log.d("View PDF", file.absolutePath)
-            pdfView.fromFile(file).load()
-        } catch (e : IOException) {
-            //If it fails send a toast and go back
-            Toast.makeText(context, "Couldn't load PDF", Toast.LENGTH_SHORT).show()
-            activity?.finish()
-        } catch (e: Exception) {
-            //If it fails send a toast and go back
-            Toast.makeText(context, "PDF corrupt?", Toast.LENGTH_SHORT).show()
+        val file = File(args.pdfFileName)
+
+        if (file.exists()) {
+            showPdf(file, view)
+        } else if (args.url != null) {
+            showPdf(args.url!!, view)
+        } else {
+            Toast.makeText(context, "Could not load PDF from cache or website?", Toast.LENGTH_SHORT).show()
             activity?.finish()
         }
     }

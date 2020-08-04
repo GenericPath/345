@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2020 Burnie Lorimer, Damian Soo, Garth Wales, Louis Whitburn
+Copyright (C) 2020 Damian Soo, Garth Wales, Louis Whitburn
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -62,7 +62,7 @@ class FirstFragment : Fragment() {
 
         //Go to list view
         view.findViewById<Button>(R.id.listTest).setOnClickListener {
-            val action = FirstFragmentDirections.actionFirstFragmentToRecyclerViewFragment(ContextWrapper(context).filesDir.absolutePath, null, null)
+            val action = FirstFragmentDirections.actionFirstFragmentToRecyclerViewFragment(ContextWrapper(context).filesDir.absolutePath, "", "", "", true)
             NavHostFragment.findNavController(nav_host_fragment).navigate(action)
         }
 
