@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package com.otago.open
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -80,17 +82,14 @@ class PDFListFragment : Fragment() {
      *
      * @return The layout generated from the XML
      */
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_pdf_list_view, container, false)
     }
 
     /**
      * Create the items to display upon starting the fragment.
      * All items are pulled from one directory
+     *
      * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
      */
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -100,13 +99,36 @@ class PDFListFragment : Fragment() {
         recycler_view.setHasFixedSize(true)
 
         if (args.listFiles) {
+            //If we are just listing files (no HTTP) then we can just set the recycler items
+            //Since we already have folders (or not) we don't need to complain
             setRecyclerViewItems(false)
-        } else if (args.paperCode.isBlank()) {
-            setRecyclerViewItems(true)
         } else if (!visited) {
+            //Block UI while the available files are fetched (but only if none exist already)
             http_bar.visibility = View.VISIBLE
-            PDFService.startService(args.paperFolder, args.paperUrl, args.paperSubName,this, args.paperSubName.isBlank()) //Only look for folders on the index page!
-            setRecyclerViewItems(false)
+        }
+
+        //To check network status - we don't want to waste mobile data
+        val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        //If we already have some files cached, and the network is metered then we *don't* want to re-download the PDFs
+        //Otherwise, we may as well re-download them. Since we don't delete old things this isn't a problem
+        //But don't download again in the same app instance (prevents re-downloading on navigation)
+        //TODO: Better invalidation logic (user setting), handle new and old PDFs being different (in PDFService)
+        if (!(args.listFiles and cm.isActiveNetworkMetered) and !visited) {
+            PDFService.startService(
+                args.paperFolder,
+                args.paperUrl,
+                args.paperSubName,
+                this,
+                args.paperSubName.isBlank()
+            ) //Only look for folders on the index page!
+
+            //If we're going to actually do something show a toast
+            Toast.makeText(
+                activity,
+                "Background download running",
+                Toast.LENGTH_LONG
+            ).show()
         }
 
         //Only download once
@@ -118,11 +140,18 @@ class PDFListFragment : Fragment() {
      *
      * @param notify - Whether to send a toast about having no files present
      */
+    @Suppress("SameParameterValue") //TODO: Check this - needed to make the warning go away but the warning doesn't seem to be true?
     private fun setRecyclerViewItems(notify: Boolean) {
         //Generate the file list
-        setRecyclerViewItems(notify, generateList())
+        setRecyclerViewItems(notify, generateFolderList())
     }
 
+    /**
+     * Sets the items in the recycler view from some given [PDFItem]s
+     *
+     * @param notify - Whether to send a toast about having no files present
+     * @param list - The [PDFItem]s to add
+     */
     private fun setRecyclerViewItems(notify: Boolean, list: List<PDFItem>) {
         //Only send the message if we want to
         if (list.isEmpty() and notify) {
@@ -142,11 +171,12 @@ class PDFListFragment : Fragment() {
     }
 
     /**
-     * Creates list of [PDFItem] items from what is present in specified directory.
+     * Creates list of [PDFItem] items from what is present in the current directory (paper folder / sub name)
      *
      * @return The list of [PDFItem]s in the specified directory
      */
-    private fun generateList(): List<PDFItem> {
+    private fun generateFolderList(): List<PDFItem> {
+        //Get the "current folder"
         val currentFolder = File(args.paperFolder + "/" + args.paperSubName)
         val result = ArrayList<FetchResult>()
         val files = currentFolder.listFiles()
@@ -170,7 +200,7 @@ class PDFListFragment : Fragment() {
             return emptyList()
         }
 
-        //Create a list of PDF (or folder) items
+        //Create a list of PDF (or folder) items from out FetchItems
         return PDFService.generatePdfItems(result)
     }
 
@@ -189,6 +219,8 @@ class PDFListFragment : Fragment() {
                 //Otherwise navigate to the subdirectory
                 val action = when {
                     args.paperCode.isBlank() -> {
+                        //If the paper code is blank then we are just listing paper folders
+                        //So we want to "guess" the URL and paper code, and set them before moving on
                         val codeGuess = item.pathSubName.substringAfterLast('/').toLowerCase(Locale.ROOT)
                         val urlGuess = "https://cs.otago.ac.nz/$codeGuess"
                         PDFListFragmentDirections.actionPDFListFragmentSelf(
@@ -200,12 +232,14 @@ class PDFListFragment : Fragment() {
                         )
                     }
                     item.pathSubName.endsWith("marks.php") -> {
+                        //For the marks we want to go to the marks frame
                         //Sometimes makes a // as apposed to a / here but it seems to work
                         val postUrl = item.paperUrl + "/" + item.pathSubName
                         Log.d("Mark View POST", postUrl)
                         PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(postUrl)
                     }
                     else -> {
+                        //Otherwise just go to where the PDFItem tells us
                         PDFListFragmentDirections.actionPDFListFragmentSelf(
                             item.paperFolder,
                             item.paperUrl,
@@ -237,10 +271,13 @@ class PDFListFragment : Fragment() {
          *
          * @see fetchLinks for link logic
          * @see downloadPDF for downloading logic
+         * @see PDFItem for more details on what the paperFolder, paperUrl, and paperSubName is
          *
-         * @param url The url to search for pdf links from
-         * @param storage The location to store PDFs in
+         * @param paperFolder The folder in which the paper's downloaded content is stored
+         * @param paperUrl The URL at which course PDFs are located
+         * @param paperSubName The resource over which we are enumerating (e.g. looking for folders in index.php or PDFs in lectures.php)
          * @param inFragment The instance of [PDFListFragment], to call in class functions
+         * @param doFolders Whether we want to include folders. Currently this should only be true if paperSubName is "" or "index.php" due to the COSC website navigation structure
          */
         fun startService(paperFolder: String, paperUrl: String, paperSubName: String, inFragment: PDFListFragment, doFolders: Boolean) {
             //Launch coroutine
@@ -253,17 +290,25 @@ class PDFListFragment : Fragment() {
                     if (inFragment.http_bar != null) {
                         inFragment.http_bar.visibility = View.GONE
                     }
-                    inFragment.setRecyclerViewItems(true, pdfs)
+                    //If we are just listing files don't complain if we don't find any - they will see that already
+                    inFragment.setRecyclerViewItems(!inFragment.args.listFiles, pdfs)
                 }
 
                 //If we do have links, download them
                 if (fetchedLinks.size > 0) {
-                    downloadPDF(fetchedLinks, inFragment)
+                    downloadPDF(fetchedLinks)
                 }
 
             }
         }
 
+        /**
+         * Creates [PDFItem]s from [FetchResult]s by deciding on the pretty name and the icon to use.
+         *
+         * @param fetched The fetched / chosen PDFs / folders
+         *
+         * @return The processed list of [FetchResult]s as a list of [PDFItem]s
+         */
         fun generatePdfItems(fetched: List<FetchResult>) : List<PDFItem> {
             val pdfs = ArrayList<PDFItem>(fetched.size)
             fetched.forEach {
@@ -276,6 +321,7 @@ class PDFListFragment : Fragment() {
                 //Give a pretty path to the file names
                 //i.e. replace lectures.php / tutorials.php etc, and trim the .pdf if it is a PDF
                 val prettyPath: String = when (it.type) {
+                    //If it's a folder either replace it with something we know, or just trim the .php off at the end
                     FileNavigatorType.FOLDER -> when (fileName) {
                         "lectures.php" -> "Lectures"
                         "tutorials.php" -> "Tutorials"
@@ -285,15 +331,17 @@ class PDFListFragment : Fragment() {
                         "resources.php" -> "Resources"
                         "staff.php" -> "Staff"
                         "marks.php" -> "Marks"
-                        else -> if (fileName.endsWith(".pdf", ignoreCase = true)) {
+                        else -> if (fileName.endsWith(".php", ignoreCase = true)) {
                             fileName.replace(".php", "", ignoreCase = true)
                         } else {
                             fileName
                         }
                     }
-                    FileNavigatorType.PDF -> if (fileName.endsWith(".php", ignoreCase = true)) {
+                    //If it's a PDF either just trim the .pdf off at the end
+                    FileNavigatorType.PDF -> if (fileName.endsWith(".pdf", ignoreCase = true)) {
                         fileName.replace(".pdf", "", ignoreCase = true)
                     } else {
+                        //Otherwise do nothing
                         fileName
                     }
                 }
@@ -307,9 +355,14 @@ class PDFListFragment : Fragment() {
         /**
          * Retrieve links from a table containing href elements.
          *
-         * @param url The url to search for pdf links from
+         * @see PDFItem for more details on what the paperFolder, paperUrl, and paperSubName is
          *
-         * @return The list of urls for each PDF on the page
+         * @param paperFolder The folder in which the paper's downloaded content is stored
+         * @param paperUrl The URL at which course PDFs are located
+         * @param paperSubName The resource over which we are enumerating (e.g. looking for folders in index.php or PDFs in lectures.php)
+         * @param doFolders Whether we want to include folders. Currently this should only be true if paperSubName is "" or "index.php" due to the COSC website navigation structure
+         *
+         * @return The list of [FetchResult]s for each PDF (or folder if [doFolders] is true) on the page
          */
         private fun fetchLinks(paperFolder: String, paperUrl: String, paperSubName: String, doFolders: Boolean): ArrayList<FetchResult> {
             val links = ArrayList<FetchResult>()
@@ -366,22 +419,9 @@ class PDFListFragment : Fragment() {
         /**
          * Download each PDF from list of url endings retrieved from [fetchLinks].
          *
-         * @param baseUrl The URL relative to which each item in links refers to a PDF
-         * @param links ArrayList of the PDFs or URLs that correspond to the endings of urls to PDFs
-         * @param storage The location to store PDFs in
-         * @param inFragment The instance of [FetchFragment], to call in class functions
+         * @param links [ArrayList] of the [FetchResult]s from something like [fetchLinks]
          */
-        private suspend fun downloadPDF(links: ArrayList<FetchResult>, inFragment: PDFListFragment) {
-            //Log.d("PDF Downloading", dataFolder)
-
-            withContext (Dispatchers.Main) {
-                Toast.makeText(
-                    inFragment.activity,
-                    "Background download running",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-
+        private fun downloadPDF(links: ArrayList<FetchResult>) {
             links.forEach{
                 //If it's a folder then we just need to create it
                 if (it.type == FileNavigatorType.FOLDER) {
@@ -445,6 +485,7 @@ class PDFListFragment : Fragment() {
                     inStream.close()
                     outStream.close()
 
+                    //If we're happy with the final file then move it into its proper location
                     Files.move(outFile.toPath(), File(saveFolder, fileName).toPath())
                 } catch (e: FileNotFoundException) {
                     //TODO: Something here

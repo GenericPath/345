@@ -65,6 +65,9 @@ class FetchFragment : Fragment() {
     }
 
     /**
+     * Loads the saved course instances so that we don't need to send any requests if the user navigates backward
+     * Also called when the screen is rotated
+     *
      * @param savedInstanceState The (saved) state of the application
      */
     private fun restoreState(savedInstanceState: Bundle) {
@@ -81,8 +84,10 @@ class FetchFragment : Fragment() {
                 incomingItems.add(CourseItem(resId!![i], name!![i], url!![i], it!!))
             }
 
+            //Load the recycler
             setRecyclerItems(incomingItems.toList())
         } catch (e: Exception) {
+            //If something fails then complain then just run it again
             Log.d("Fetch Fragment Saving", "Bundle restore failed")
             Toast.makeText(context, "Failed to load previous state - fetching again", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
@@ -91,6 +96,11 @@ class FetchFragment : Fragment() {
         }
     }
 
+    /**
+     * Event handler for saving the state when the user navigates away or rotates the screen
+     *
+     * @param outState bundle the bundle in which to package any relevant information
+     */
     override fun onSaveInstanceState(outState: Bundle) {
         Log.d("Fetch Fragment Saving", "Creating bundle")
         val code = Array(adapterItems.size) {
@@ -123,10 +133,7 @@ class FetchFragment : Fragment() {
      *
      * @return The layout generated from the XML
      */
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return if (view == null) {
             inflater.inflate(R.layout.fragment_fetch, container, false)
@@ -169,30 +176,25 @@ class FetchFragment : Fragment() {
      */
     fun setRecyclerItems(links: List<CourseItem>) {
         adapterItems = links
-        recycler_view.adapter =
-            CourseItemRecyclerViewAdapter(links) { link ->
-                selectType(
-                    link
-                )
-            }
+        //Create our recycler view adapter and the lambda to handle selection
+        recycler_view.adapter = CourseItemRecyclerViewAdapter(links) { link -> selectType(link) }
         recycler_view.layoutManager = LinearLayoutManager(context)
         recycler_view.setHasFixedSize(true)
     }
 
     /**
-     * Currently just downloads the lecture PDFs and moved to the [PDFListFragment
+     * Navigates to a [PDFListFragment] which will fetch course sub-folders (lectures, tutorials etc) and PDFs
      *
      * @param item The course to delve into
      */
     private fun selectType(item: CourseItem) {
-        val action =
-            FetchFragmentDirections.actionFetchFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode, item.courseUrl, "", item.courseCode, false)
-        NavHostFragment.findNavController(nav_host_fragment)
-            .navigate(action)
+        //Want to have it to save into a COSC*** folder, and download from https://cs.otago.ac.nz/cosc***
+        val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode, item.courseUrl, "", item.courseCode, false)
+        NavHostFragment.findNavController(nav_host_fragment).navigate(action)
     }
 
     /**
-     * Coordinates fetching the course webpages from the university website
+     * Coordinates fetching the course web-pages from the university website
      * Use [CourseService.startService] to begin
      */
     object CourseService {
@@ -204,7 +206,7 @@ class FetchFragment : Fragment() {
         /**
          * Starts this service
          *
-         * @param inFragment The instance of FetchFragment, to call in class functions
+         * @param inFragment The instance of [FetchFragment], to call in class functions
          */
         fun startService(inFragment: FetchFragment) {
             coroutineScope.launch {
@@ -233,10 +235,8 @@ class FetchFragment : Fragment() {
                     hrefs.forEach { linkIt ->
                         val infoUrl = linkIt.attr("href")
                         val courseCode = infoUrl.substring(infoUrl.length - 7)
-                        val courseUrl =
-                            "https://cs.otago.ac.nz/" + courseCode.toLowerCase(Locale.ROOT)
+                        val courseUrl = "https://cs.otago.ac.nz/" + courseCode.toLowerCase(Locale.ROOT)
                         val courseName = linkIt.html()
-                        //TODO: Update icon here
                         links.add(
                             CourseItem(
                                 R.drawable.ic_folder,
