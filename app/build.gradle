@@ -39,7 +39,7 @@ android {
     }
 
     dokka {
-        outputFormat = 'html'
+        outputFormat = 'gfm'
         outputDirectory = "$buildDir/dokka"
     }
 
