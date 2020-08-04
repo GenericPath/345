@@ -1,5 +1,6 @@
 # OpenOtago - COSC345 Project
-![Test](https://github.com/GenericPath/345/workflows/Test/badge.svg) ![Build & Publish](https://github.com/GenericPath/345/workflows/Build%20&%20Publish/badge.svg) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/69862f4fa1f84105979181bf83eb4340)](https://www.codacy.com/manual/garth.dhnz/345?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GenericPath/345&amp;utm_campaign=Badge_Grade)
+![Test](https://github.com/GenericPath/345/workflows/Test/badge.svg) ![Build & Publish](https://github.com/GenericPath/345/workflows/Build%20&%20Publish/badge.svg) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/69862f4fa1f84105979181bf83eb4340)](https://www.codacy.com/manual/garth.dhnz/345?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GenericPath/345&amp;utm_campaign=Badge_Grade) [![codecov](https://codecov.io/gh/GenericPath/345/branch/master/graph/badge.svg)](https://codecov.io/gh/GenericPath/345)
+
 
 **OpenOtago is an application to provide a mobile replacement to Univeristy of Otago online resources.**
 

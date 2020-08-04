@@ -3,6 +3,15 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: "com.vanniktech.android.junit.jacoco"
+
+junitJacoco {
+    jacocoVersion = '0.8.4' // type String
+    ignoreProjects = [] // type String array
+    excludes // type String List
+    includeNoLocationClasses = false // type boolean
+    includeInstrumentationCoverageInMergedReport = false // type boolean
+}
 
 android {
     compileSdkVersion 29
@@ -24,10 +33,13 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            testCoverageEnabled true
+        }
     }
 
     dokka {
-        outputFormat = 'html'
+        outputFormat = 'gfm'
         outputDirectory = "$buildDir/dokka"
     }
 
