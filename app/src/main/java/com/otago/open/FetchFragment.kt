@@ -27,7 +27,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_fetch.*
@@ -65,6 +64,9 @@ class FetchFragment : Fragment() {
         retainInstance = true
     }
 
+    /**
+     * @param savedInstanceState The (saved) state of the application
+     */
     private fun restoreState(savedInstanceState: Bundle) {
         try {
             Log.d("Fetch Fragment Saving", "Restoring bundle")
@@ -143,16 +145,20 @@ class FetchFragment : Fragment() {
 
         //If we have items from a previous state, then just re-add them here
         //Otherwise, try to restore, or if there is nothing to restore then just re-fetch
-        if (adapterItems.isNotEmpty()) {
-            Log.d("Fetch Activity Created", "Restoring from instance")
-            setRecyclerItems(adapterItems)
-        } else if (savedInstanceState == null) {
-            Log.d("Fetch Activity Created", "Fetching")
-            http_bar.visibility = View.VISIBLE
-            CourseService.startService(this)
-        } else {
-            Log.d("Fetch Activity Created", "Restoring from saved state")
-            restoreState(savedInstanceState)
+        when {
+            adapterItems.isNotEmpty() -> {
+                Log.d("Fetch Activity Created", "Restoring from instance")
+                setRecyclerItems(adapterItems)
+            }
+            savedInstanceState == null -> {
+                Log.d("Fetch Activity Created", "Fetching")
+                http_bar.visibility = View.VISIBLE
+                CourseService.startService(this)
+            }
+            else -> {
+                Log.d("Fetch Activity Created", "Restoring from saved state")
+                restoreState(savedInstanceState)
+            }
         }
     }
 
@@ -239,7 +245,7 @@ class FetchFragment : Fragment() {
                                 courseCode
                             )
                         )
-                        Log.d("Added Course", courseName + " with URL " + courseUrl)
+                        Log.d("Added Course", "$courseName with URL $courseUrl")
                     }
                 }
             } catch (e: MalformedURLException) {

@@ -240,7 +240,7 @@ class PDFListFragment : Fragment() {
          *
          * @param url The url to search for pdf links from
          * @param storage The location to store PDFs in
-         * @param inFragment The instance of [FetchFragment], to call in class functions
+         * @param inFragment The instance of [PDFListFragment], to call in class functions
          */
         fun startService(paperFolder: String, paperUrl: String, paperSubName: String, inFragment: PDFListFragment, doFolders: Boolean) {
             //Launch coroutine

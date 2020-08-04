@@ -25,6 +25,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
@@ -59,10 +60,14 @@ class PDFViewFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_pdf_view, container, false)
     }
 
-    private fun showPdf(file: File, view: View) {
+    /**
+     * Loads a PDF from the local filesystem
+     *
+     * @param file The file to load
+     * @param pdfView The [PDFView] in which to render the PDF
+     */
+    private fun showPdf(file: File, pdfView: PDFView) {
         //Displays a PDF
-        val pdfView = view.findViewById<PDFView>(R.id.pdfView)
-
         try {
             Log.d("View PDF", file.absolutePath)
             pdfView.fromFile(file).load()
@@ -77,10 +82,13 @@ class PDFViewFragment : Fragment() {
         }
     }
 
-    private fun showPdf(url: String, view: View) {
-        //Displays a PDF
-        val pdfView = view!!.findViewById<PDFView>(R.id.pdfView)
-
+    /**
+     * Loads a PDF from the local filesystem
+     *
+     * @param url The URL from which to load the PDF
+     * @param pdfView The [PDFView] in which to render the PDF
+     */
+    private fun showPdf(url: String, pdfView: PDFView) {
         try {
             Log.d("View PDF (URL)", url)
             pdfView.fromUri(Uri.parse(url)).load()
@@ -98,7 +106,6 @@ class PDFViewFragment : Fragment() {
     /**
      * Handles the creation of the views.
      * Displays the PDF
-     * TODO: Figure out why load() never throws an exception on the current thread
      *
      * @param view The current view
      * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
@@ -106,15 +113,25 @@ class PDFViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        //Parse the filename into a File
         val file = File(args.pdfFileName)
 
-        if (file.exists()) {
-            showPdf(file, view)
-        } else if (args.url != null) {
-            showPdf(args.url!!, view)
-        } else {
-            Toast.makeText(context, "Could not load PDF from cache or website?", Toast.LENGTH_SHORT).show()
-            activity?.finish()
+        //TODO: Figure out why load() never throws an exception on the current thread
+        when {
+            //If the file exists (i.e. has been downloaded) we will view it here
+            //We know that this will work since the files that haven't been fully downloaded yet end in .download
+            file.exists() -> {
+                showPdf(file, view.findViewById<PDFView>(R.id.pdfView))
+            }
+            //If there is a provided URL try to load it from the CS website
+            args.url != null -> {
+                showPdf(args.url!!, view.findViewById<PDFView>(R.id.pdfView))
+            }
+            //Otherwise fail?
+            else -> {
+                Toast.makeText(context, "Could not load PDF from cache or website?", Toast.LENGTH_SHORT).show()
+                activity?.finish()
+            }
         }
     }
 }
