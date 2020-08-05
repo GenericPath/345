@@ -354,15 +354,19 @@ class PDFListFragment : Fragment() {
          * a file (i.e. no forward slash), otherwise when in the folder given by [onPageUrl] it determines
          * where the sub-resource would be located
          *
-         * If [href] starts with a "/" we just return the [href] if the [href] refers to the same paper
-         * otherwise we return null
+         * If [href] starts with a "/" we just return the [href] relative to the COSC website
+         *
+         * If [href] is a http(s) link we just return it
          *
          * @param onPageUrl The page that the link is on, or the folder that the [href] is relative to
          * @param href The href
          *
          * @return Where [href] should point if it appears on a page [onPageUrl], or if it is a sub-resource of a folder [onPageUrl]
          */
-        fun determinePath(onPageUrl: String, href: String): String? {
+        fun determinePath(onPageUrl: String, href: String): String {
+            if (href.startsWith("http")) {
+                return href
+            }
             val trimHref = if (href.startsWith("./")) {
                 href.replaceFirst("./", "")
             } else {
@@ -373,20 +377,10 @@ class PDFListFragment : Fragment() {
                     "$onPageUrl/$trimHref"
                 }
                 trimHref.startsWith('/') -> {
-                    val paperPathStart = if (onPageUrl.startsWith("https://cs.otago.ac.nz")) {
-                        onPageUrl.replaceFirst("https://cs.otago.ac.nz", "")
-                    } else {
-                        onPageUrl
-                    }
-
-                    if (trimHref.startsWith(paperPathStart)) {
-                        return "https://cs.otago.ac.nz$trimHref"
-                    }
-
-                    return null
+                    return "https://cs.otago.ac.nz$trimHref"
                 }
                 else -> {
-                    onPageUrl.substringBeforeLast("/", "") + trimHref
+                    onPageUrl.substringBeforeLast("/", "") + "/$trimHref"
                 }
             }
         }
@@ -413,15 +407,13 @@ class PDFListFragment : Fragment() {
                     if (href.endsWith(".pdf")) {
                         Log.d("Fetched Link", href)
                         val newUrl = determinePath(parentFolder, href)
-                        if (newUrl != null) {
-                            links += FetchResult(
-                                newUrl,
-                                "parentFolder/$href",
-                                it.html(),
-                                FileNavigatorType.PDF
-                            )
-                            Log.d("Found Folder (URL)", newUrl)
-                        }
+                        links += FetchResult(
+                            newUrl,
+                            "parentFolder/$href",
+                            it.html(),
+                            FileNavigatorType.PDF
+                        )
+                        Log.d("Found Folder (URL)", newUrl)
                     }
                 }
 
@@ -432,7 +424,7 @@ class PDFListFragment : Fragment() {
                         val newUrl = determinePath(parentFolder, href)
 
                         //Don't fetch the home page (we're already there)
-                        if (newUrl != null && !newUrl.endsWith("index.php")) {
+                        if (!newUrl.endsWith("index.php")) {
                             links += FetchResult(newUrl, "parentFolder/$href", it.html(), FileNavigatorType.FOLDER)
                             Log.d("Fetched Link (URL)", newUrl)
                         }

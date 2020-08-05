@@ -12,9 +12,9 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun url_process_is_correct() {
-        assertEquals("pdf/L02.pdf", PDFListFragment.PDFService.determinePath("lectures.php", "pdf/L02.pdf", "https://cs.otago.ac.nz/cosc242/"))
-        assertEquals("pdf/L02.pdf", PDFListFragment.PDFService.determinePath("lectures.php", "/cosc242/pdf/L02.pdf", "https://cs.otago.ac.nz/cosc242/"))
-        assertEquals(null, PDFListFragment.PDFService.determinePath("lectures.php", "/cosc244/pdf/L02.pdf", "https://cs.otago.ac.nz/cosc242/"))
-        //assertEquals("pdf/L02.pdf", PDFListFragment.PDFService.determinePath("lectures.php", "pdf/L02.pdf", "https://cs.otago.ac.nz/cosc242/"))
+        assertEquals("https://cs.otago.ac.nz/cosc242/pdf/L02.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "pdf/L02.pdf"))
+        assertEquals("https://cs.otago.ac.nz/cosc242/pdf/L02.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "/cosc242/pdf/L02.pdf"))
+        assertEquals("https://cs.otago.ac.nz/cosc244/pdf/L02.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "/cosc244/pdf/L02.pdf"))
+        assertEquals("https://example.com", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "https://example.com"))
     }
 }
