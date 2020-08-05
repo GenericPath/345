@@ -110,7 +110,11 @@ class PDFListFragment : Fragment() {
 
         var url = ""
         try {
-            val reader = BufferedReader(FileReader(args.folder + ".meta"))
+            val metaName = args.folder + ".meta"
+
+            Log.d("Loading Meta File", metaName)
+
+            val reader = BufferedReader(FileReader(metaName))
             reader.readLine() //Ignore COSC Name
             url = reader.readLine()
 
@@ -398,22 +402,26 @@ class PDFListFragment : Fragment() {
          */
         private fun fetchLinks(parentFolder: String, url: String, doFolders: Boolean): ArrayList<FetchResult> {
             val links = ArrayList<FetchResult>()
+            Log.d("Jsoup URL", url)
+
             try {
                 val document: Document = Jsoup.connect(url).get()
 
                 //PDF links
                 document.select("tr a").forEach {
                     val href = it.attr("href")
+                    val hrefName = href.substringAfterLast('/')
+                    Log.d("Found href (PDF)", href)
                     if (href.endsWith(".pdf")) {
                         Log.d("Fetched Link", href)
-                        val newUrl = determinePath(parentFolder, href)
+                        val newUrl = determinePath(url, href)
                         links += FetchResult(
+                            "$parentFolder/$hrefName",
                             newUrl,
-                            "parentFolder/$href",
-                            it.html(),
+                            it.text(),
                             FileNavigatorType.PDF
                         )
-                        Log.d("Found Folder (URL)", newUrl)
+                        Log.d("Found PDF (URL)", newUrl)
                     }
                 }
 
@@ -421,12 +429,16 @@ class PDFListFragment : Fragment() {
                     //Nav links
                     document.select("div#coursepagenavmenu li a").forEach {
                         val href = it.attr("href")
-                        val newUrl = determinePath(parentFolder, href)
+                        val hrefName = href.substringAfterLast('/')
+                        Log.d("Found href (folder)", href)
+                        val newUrl = determinePath(url, href)
 
                         //Don't fetch the home page (we're already there)
                         if (!newUrl.endsWith("index.php")) {
-                            links += FetchResult(newUrl, "parentFolder/$href", it.html(), FileNavigatorType.FOLDER)
-                            Log.d("Fetched Link (URL)", newUrl)
+                            val name = it.text()
+                            Log.d("Detected Name", name)
+                            links += FetchResult("$parentFolder/$hrefName", newUrl, name, FileNavigatorType.FOLDER)
+                            Log.d("Found Folder (URL)", newUrl)
                         }
                     }
                 }
@@ -451,9 +463,8 @@ class PDFListFragment : Fragment() {
             return links
         }
 
-        private fun createMetaFile(saveFolder: String, fileName: String, it: FetchResult) {
-            val metaFile  = File(saveFolder, "$fileName.meta")
-            val metaStream = BufferedWriter(PrintWriter(FileOutputStream(metaFile)))
+        private fun createMetaFile(saveFile: String, it: FetchResult) {
+            val metaStream = BufferedWriter(PrintWriter(FileOutputStream("$saveFile.meta")))
 
             metaStream.write(it.coscName)
             metaStream.newLine()
@@ -462,6 +473,69 @@ class PDFListFragment : Fragment() {
             //Each time you create a file that doesn't end with a newline Ken Thompson and Dennis Ritchie (RIP) shed a single tear
 
             metaStream.close()
+        }
+
+        fun createMetaFile(saveFolder: String, fileName: String, it: FetchResult) {
+            createMetaFile("$saveFolder/$fileName", it)
+        }
+
+        fun downloadFile(url: String, parentDir: String, fileName: String): String? {
+            //Generate the URL for where the PDF is
+            val resUrl = URL(url)
+
+            //Make the folder to save the lecture PDF into
+            File(parentDir).mkdirs()
+
+            //Create a buffer for the HTTP requests
+            val buf = ByteArray(1024)
+
+            //Create the file to save the lecture PDF into
+            val outFile  = File(parentDir, "$fileName.download")
+            Log.d("PDF Saving", outFile.absolutePath)
+            try {
+                outFile.createNewFile()
+            } catch (e: IOException) {
+                //TODO: Something here
+                e.printStackTrace()
+                return null
+            }
+
+            try {
+                val outStream = BufferedOutputStream(
+                    FileOutputStream(outFile)
+                )
+
+                Log.d("PDF Downloading", resUrl.toExternalForm())
+
+                //Open a HTTP connection
+                val conn = resUrl.openConnection()
+                val inStream = conn.getInputStream()
+
+                //Read the result and write it to file
+                var byteRead = inStream.read(buf)
+                while (byteRead != -1) {
+                    outStream.write(buf, 0, byteRead)
+                    byteRead = inStream.read(buf)
+                }
+
+                //Close the file streams
+                inStream.close()
+                outStream.close()
+
+                //If we're happy with the final file then move it into its proper location
+                Files.move(outFile.toPath(), File(parentDir, fileName).toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+
+                Log.d("Successfully Saved", "$parentDir/$fileName")
+                return "$parentDir/$fileName"
+            } catch (e: FileNotFoundException) {
+                //TODO: Something here
+                e.printStackTrace()
+                return null
+            } catch (e: IOException) {
+                //TODO: Something here
+                e.printStackTrace()
+                return null
+            }
         }
 
         /**
@@ -500,58 +574,11 @@ class PDFListFragment : Fragment() {
                     return@forEach
                 }
 
-                //Generate the URL for where the PDF is
-                val url = URL(it.itemUrl)
+                val outFile = downloadFile(it.itemUrl, parentDir, fileName)
 
-                //Make the folder to save the lecture PDF into
-                File(parentDir).mkdirs()
-
-                //Create a buffer for the HTTP requests
-                val buf = ByteArray(1024)
-
-                //Create the file to save the lecture PDF into
-                val outFile  = File(parentDir, "$fileName.download")
-                Log.d("PDF Saving", outFile.absolutePath)
-                try {
-                    outFile.createNewFile()
-                } catch (e: IOException) {
-                    //TODO: Something here
-                    e.printStackTrace()
-                    return@forEach
-                }
-
-                try {
-                    val outStream = BufferedOutputStream(
-                        FileOutputStream(outFile)
-                    )
-
-                    Log.d("PDF Downloading", url.toExternalForm())
-
-                    //Open a HTTP connection
-                    val conn = url.openConnection()
-                    val inStream = conn.getInputStream()
-
-                    //Read the result and write it to file
-                    var byteRead = inStream.read(buf)
-                    while (byteRead != -1) {
-                        outStream.write(buf, 0, byteRead)
-                        byteRead = inStream.read(buf)
-                    }
-
-                    //Close the file streams
-                    inStream.close()
-                    outStream.close()
-
-                    //If we're happy with the final file then move it into its proper location
-                    Files.move(outFile.toPath(), File(parentDir, fileName).toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-                } catch (e: FileNotFoundException) {
-                    //TODO: Something here
-                    e.printStackTrace()
-                    return@forEach
-                } catch (e: IOException) {
-                    //TODO: Something here
-                    e.printStackTrace()
-                    return@forEach
+                if (outFile != null) {
+                    Log.d("Creating Download Meta-File", outFile)
+                    createMetaFile(outFile, it)
                 }
             }
         }

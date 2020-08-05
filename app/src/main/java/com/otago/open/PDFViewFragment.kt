@@ -19,17 +19,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package com.otago.open
 
 //https://github.com/barteksc/AndroidPdfViewer
-import android.net.Uri
+import android.content.ContextWrapper
+import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import com.github.barteksc.pdfviewer.PDFView
+import kotlinx.android.synthetic.main.fragment_pdf_view.*
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.IOException
 
@@ -86,18 +88,11 @@ class PDFViewFragment : Fragment() {
      * @param pdfView The [PDFView] in which to render the PDF
      */
     private fun showPdf(url: String, pdfView: PDFView) {
-        try {
-            Log.d("View PDF (URL)", url)
-            pdfView.fromUri(Uri.parse(url)).load()
-        } catch (e : IOException) {
-            //If it fails send a toast and go back
-            Toast.makeText(context, "Couldn't load PDF", Toast.LENGTH_SHORT).show()
-            activity?.finish()
-        } catch (e: Exception) {
-            //If it fails send a toast and go back
-            Toast.makeText(context, "PDF corrupt?", Toast.LENGTH_SHORT).show()
-            activity?.finish()
-        }
+        Log.d("View PDF (URL)", url)
+
+        this.http_bar.visibility = View.VISIBLE
+
+        TempService.startService(url, ContextWrapper(context).cacheDir.absolutePath, "view.pdf", this, pdfView)
     }
 
     /**
@@ -128,6 +123,22 @@ class PDFViewFragment : Fragment() {
             else -> {
                 Toast.makeText(context, "Could not load PDF from cache or website?", Toast.LENGTH_SHORT).show()
                 activity?.finish()
+            }
+        }
+    }
+
+    object TempService {
+        private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
+        fun startService(url: String, parentFolder: String, fileName: String, inFragment: PDFViewFragment, pdfView: PDFView) {
+            //Launch coroutine
+            coroutineScope.launch {
+                PDFListFragment.PDFService.downloadFile(url, parentFolder, fileName)
+
+                withContext(Dispatchers.Main) {
+                    inFragment.http_bar.visibility = View.GONE
+                    inFragment.showPdf(File(parentFolder, fileName), pdfView)
+                }
             }
         }
     }
