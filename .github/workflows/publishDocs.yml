@@ -24,11 +24,11 @@ jobs:
       - name: Build dokka documentation with Gradle
         run: ./gradlew dokka
 
-      - name: Upload to repo
+      - name: Upload documentation to repo
         uses: JamesIves/github-pages-deploy-action@3.5.9
         with:
           ACCESS_TOKEN: ${{ secrets.DOC_SECRET }}
           REPOSITORY_NAME: Zyviax/345Documentation
           BRANCH: master
           FOLDER: app/build/dokka
-          COMMIT_MESSSAGE: updating documentation
+          COMMIT_MESSSAGE: "updating documentation"
