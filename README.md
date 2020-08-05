@@ -14,9 +14,9 @@
 </table>
 
 Created by
-- Damian Soo (6551336)
-- Garth Wales (4861462)
-- Louis Whitburn (2548261)
+ - Damian Soo (6551336)
+ - Garth Wales (4861462)
+ - Louis Whitburn (2548261)
 
 ---
 ## **Commiting Code** 
@@ -24,17 +24,16 @@ All submitted code runs on the CI pipelines defined in ```.github/workflows/```
 
 ```test.yml```
 
-- Tests code quality (lintDebug)
-
-- Run unit tests (testDebug)
+ - Tests code quality (lintDebug)
+ - Run unit tests (testDebug)
  
 ```build.yml```
 
-- Tests debug build success (assembleDebug)  
+ - Tests debug build success (assembleDebug)  
 
 ```publishDocs.yml```
 
-- Deploy documentation pages (dokka)
+ - Deploy documentation pages (dokka)
 
 ---
 ## *Alpha release* 
@@ -42,29 +41,29 @@ Features fetching, storing and viewing lecture slides for Computer Science paper
 
 **Requirements to build:**
 
-- Java Environment
-- Android SDK version 29 
+ - Java Environment
+ - Android SDK version 29 
 
 **To build application locally:**
 
-- Clone the repository
+  - Clone the repository
 
-- *Option 1* - Android Studio:
+  - *Option 1* - Android Studio:
       - Open with Android Studio, wait for initial gradle setup
       - Build (Ctrl+F9) / Emulate (Shift+F10)
 
-- *Option 2* - *NIX:
+  - *Option 2* - *NIX:
       - ```./gradlew assembleDebug ```
       - install ```/app/build/outputs/apk/debug/app-debug.apk``` onto device
 
 **To build documentation locally:**
 
- - ```./gradlew dokka```
+- ```./gradlew dokka```
 
- - open ```/app/build/dokka/app/index.html```
+- open ```/app/build/dokka/app/index.html```
 
 **To run tests locally:**
 
- - ```./gradlew lintDebug``` (Test code formatting)
+- ```./gradlew lintDebug``` (Test code formatting)
 
- - ```./gradlew testDebug``` (Run unit tests)
+- ```./gradlew testDebug``` (Run unit tests)
