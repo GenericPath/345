@@ -31,3 +31,4 @@ jobs:
           REPOSITORY_NAME: Zyviax/345Documentation
           BRANCH: master
           FOLDER: app/build/dokka
+          COMMIT_MESSSAGE: updating documentation
