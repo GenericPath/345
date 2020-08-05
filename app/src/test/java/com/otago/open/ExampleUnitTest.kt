@@ -11,7 +11,10 @@ import org.junit.Assert.*
  */
 class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun url_process_is_correct() {
+        assertEquals("pdf/L02.pdf", PDFListFragment.PDFService.determinePath("lectures.php", "pdf/L02.pdf", "https://cs.otago.ac.nz/cosc242/"))
+        assertEquals("pdf/L02.pdf", PDFListFragment.PDFService.determinePath("lectures.php", "/cosc242/pdf/L02.pdf", "https://cs.otago.ac.nz/cosc242/"))
+        assertEquals(null, PDFListFragment.PDFService.determinePath("lectures.php", "/cosc244/pdf/L02.pdf", "https://cs.otago.ac.nz/cosc242/"))
+        //assertEquals("pdf/L02.pdf", PDFListFragment.PDFService.determinePath("lectures.php", "pdf/L02.pdf", "https://cs.otago.ac.nz/cosc242/"))
     }
 }

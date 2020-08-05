@@ -46,6 +46,7 @@ import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -211,6 +212,8 @@ class PDFListFragment : Fragment() {
     private fun openFile(item: PDFItem) {
         when (item.pathType) {
             FileNavigatorType.PDF -> {
+                Log.d("PDF View (URL)", item.paperUrl + "; " + item.pathSubName)
+                Log.d("PDF View (Folder)", item.paperFolder + "; " + item.pathSubName)
                 //If is's a PDF then open the PDF in the PDFViewFragment
                 val action = PDFListFragmentDirections.actionPDFListFragmentToPDFViewFragment(item.paperFolder + "/" + item.pathSubName, item.paperUrl + "/" + item.pathSubName)
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
@@ -353,6 +356,45 @@ class PDFListFragment : Fragment() {
         }
 
         /**
+         * Determines where a [href] on a page given by [currentDir] should point, if [currentDir] is
+         * a file (i.e. no forward slash), otherwise when in the folder given by [currentDir]
+         *
+         * If [href] starts with a "/" We just return the href with the [paperUrl] removed
+         *
+         * The return is relative to [paperUrl]
+         *
+         * @param currentDir The current folder or page
+         * @param href The href
+         * @param paperUrl The base url for the course
+         *
+         * @return Where [href] should point (relative to [paperUrl]) if it appears at [currentDir]
+         */
+        fun determinePath(currentDir: String, href: String, paperUrl: String): String? {
+            val trimHref = if (href.startsWith("./")) {
+                href.replaceFirst("./", "")
+            } else {
+                href
+            }
+            return when {
+                currentDir.endsWith("/") -> {
+                    "$currentDir/$trimHref"
+                }
+                trimHref.startsWith('/') -> {
+                    val paperPathStart = paperUrl.replaceFirst("https://cs.otago.ac.nz", "")
+
+                    if (trimHref.startsWith(paperPathStart)) {
+                        return trimHref.replaceFirst(paperPathStart, "")
+                    }
+
+                    return null
+                }
+                else -> {
+                    currentDir.substringBeforeLast("/", "") + trimHref
+                }
+            }
+        }
+
+        /**
          * Retrieve links from a table containing href elements.
          *
          * @see PDFItem for more details on what the paperFolder, paperUrl, and paperSubName is
@@ -382,16 +424,12 @@ class PDFListFragment : Fragment() {
                     //Nav links
                     document.select("div#coursepagenavmenu li a").forEach {
                         val href = it.attr("href")
-                        val trimHref = if (href.startsWith("./")) {
-                            href.substring(2)
-                        } else {
-                            href
-                        }
+                        val nextSubName = determinePath(paperSubName, href, paperUrl)
 
                         //Don't fetch the home page (we're already there)
-                        if (trimHref != "index.php") {
-                            links += FetchResult(paperFolder, paperUrl, "$paperSubName/$href", FileNavigatorType.FOLDER)
-                            Log.d("Fetched Link (URL)", trimHref)
+                        if (nextSubName != "index.php" && nextSubName != null) {
+                            links += FetchResult(paperFolder, paperUrl, nextSubName, FileNavigatorType.FOLDER)
+                            Log.d("Fetched Link (URL)", "$paperUrl/$nextSubName")
                         }
                     }
                 }
@@ -486,7 +524,7 @@ class PDFListFragment : Fragment() {
                     outStream.close()
 
                     //If we're happy with the final file then move it into its proper location
-                    Files.move(outFile.toPath(), File(saveFolder, fileName).toPath())
+                    Files.move(outFile.toPath(), File(saveFolder, fileName).toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
                 } catch (e: FileNotFoundException) {
                     //TODO: Something here
                     e.printStackTrace()
