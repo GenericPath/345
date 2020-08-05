@@ -23,9 +23,8 @@ package com.otago.open
  *
  * @param imageResource The index of imageResource to use from project
  * @param pathType The type of item at the path (folder, PDF, etc)
- * @param paperFolder The base directory for the paper (e.g. /data/android_stuff_here/COSC***)
- * @param paperUrl The base URL for the paper (e.g. https://cs.otago.ac.nz/COSC***)
- * @param pathSubName The rest of the folder name or URL for a resource, e.g. lectures.php/Lecture01.pdf
- * @param prettyPath The pretty name for the path (e.g. lectures.php -> Lectures)
+ * @param itemFile The base directory for the paper (e.g. /data/android_stuff_here/cosc244/lectures.php/L1.pdf)
+ * @param itemUrl The URL for the item (e.g. https://cs.otago.ac.nz/cosc244/pdf/L1.php)
+ * @param coscName The name for the resource for the path (e.g. lectures.php -> Lectures and L1.pdf -> Introduction to Data Communications)
  */
-data class PDFItem(val imageResource: Int, val pathType: FileNavigatorType, val paperFolder: String, val paperUrl: String, val pathSubName: String, val prettyPath: String)
+data class PDFItem(val imageResource: Int, val pathType: FileNavigatorType, val itemFile: String, val itemUrl: String, val coscName: String)

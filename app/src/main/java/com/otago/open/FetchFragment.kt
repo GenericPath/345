@@ -189,7 +189,7 @@ class FetchFragment : Fragment() {
      */
     private fun selectType(item: CourseItem) {
         //Want to have it to save into a COSC*** folder, and download from https://cs.otago.ac.nz/cosc***
-        val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode, item.courseUrl, "", item.courseCode, false)
+        val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode, item.courseUrl,  false)
         NavHostFragment.findNavController(nav_host_fragment).navigate(action)
     }
 

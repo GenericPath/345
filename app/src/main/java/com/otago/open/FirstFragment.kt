@@ -59,7 +59,7 @@ class FirstFragment : Fragment() {
 
         //Go to list view
         view.findViewById<Button>(R.id.listTest).setOnClickListener {
-            val action = FirstFragmentDirections.actionFirstFragmentToRecyclerViewFragment(ContextWrapper(context).filesDir.absolutePath, "", "", "", true)
+            val action = FirstFragmentDirections.actionFirstFragmentToRecyclerViewFragment(ContextWrapper(context).filesDir.absolutePath, "", true)
             NavHostFragment.findNavController(nav_host_fragment).navigate(action)
         }
 

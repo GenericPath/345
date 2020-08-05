@@ -39,15 +39,7 @@
         tools:layout="@layout/fragment_pdf_list_view" >
 
         <argument
-            android:name="paperFolder"
-            app:argType="string" />
-
-        <argument
-            android:name="paperUrl"
-            app:argType="string" />
-
-        <argument
-            android:name="paperSubName"
+            android:name="folder"
             app:argType="string" />
 
         <argument
