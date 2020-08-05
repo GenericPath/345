@@ -27,7 +27,7 @@ jobs:
       - name: Upload to repo
         uses: JamesIves/github-pages-deploy-action@3.5.9
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACCESS_TOKEN: ${{ secrets.DOC_SECRET }}
           REPOSITORY_NAME: Zyviax/345Documentation
           BRANCH: master
           FOLDER: app/build/dokka
