@@ -10,3 +10,4 @@
 /proposal
 !/proposal/*.pdf
 !/proposal/*.tex
+.vscode
