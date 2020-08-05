@@ -1,7 +1,6 @@
 # OpenOtago - COSC345 Project
 ![Tests](https://github.com/GenericPath/345/workflows/Tests/badge.svg) ![Build](https://github.com/GenericPath/345/workflows/Build/badge.svg) [![Documentation](https://github.com/GenericPath/345/workflows/Documentation/badge.svg)](https://zyviax.github.io/345Documentation/app/index.html) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/69862f4fa1f84105979181bf83eb4340)](https://www.codacy.com/manual/garth.dhnz/345?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GenericPath/345&amp;utm_campaign=Badge_Grade) [![codecov](https://codecov.io/gh/GenericPath/345/branch/master/graph/badge.svg)](https://codecov.io/gh/GenericPath/345)
 
-
 **OpenOtago is an application to provide a mobile replacement to Univeristy of Otago online resources.**
 
 <table>
@@ -15,45 +14,58 @@
 </table>
 
 Created by
- - Damian Soo (6551336)
- - Garth Wales (4861462) 
- - Louis Whitburn (2548261)
+- Damian Soo (6551336)
+
+- Garth Wales (4861462)
+
+- Louis Whitburn (2548261)
 
 ---
-### **Commiting Code** 
+## **Commiting Code** 
 All submitted code runs on the CI pipelines defined in ```.github/workflows/```
 
- ```test.yml```
- - Tests code quality (lintDebug)
- - Run unit tests (testDebug)
+  ```test.yml```
+
+  - Tests code quality (lintDebug)
+  - Run unit tests (testDebug)
  
- ```build.yml```
- - Tests debug build success (assembleDebug)  
+  ```build.yml```
 
- ```publishDocs.yml```  
- - Deploy documentation pages (dokka)
+  - Tests debug build success (assembleDebug)  
 
-----
+  ```publishDocs.yml```
+
+  - Deploy documentation pages (dokka)
+
+---
 ## *Alpha release* 
 Features fetching, storing and viewing lecture slides for Computer Science papers.
 
 **Requirements to build:**
- - Java Environment
- - Android SDK version 29 
+
+- Java Environment
+- Android SDK version 29 
 
 **To build application locally:**
+
 - Clone the repository
+
 - *Option 1* - Android Studio:
-    - Open with Android Studio, wait for initial gradle setup
-    - Build (Ctrl+F9) / Emulate (Shift+F10)
+  - Open with Android Studio, wait for initial gradle setup
+  - Build (Ctrl+F9) / Emulate (Shift+F10)
+
 - *Option 2* - *NIX:
-    - ```./gradlew assembleDebug ```
-    - install ```/app/build/outputs/apk/debug/app-debug.apk``` onto device
+  - ```./gradlew assembleDebug ```
+  - install ```/app/build/outputs/apk/debug/app-debug.apk``` onto device
 
 **To build documentation locally:**
- - ```./gradlew dokka```
- - open ```/app/build/dokka/app/index.html```
+
+- ```./gradlew dokka```
+
+- open ```/app/build/dokka/app/index.html```
 
  **To run tests locally:**
- - ```./gradlew lintDebug``` (Test code formatting)
- - ```./gradlew testDebug``` (Run unit tests)
+
+- ```./gradlew lintDebug``` (Test code formatting)
+
+- ```./gradlew testDebug``` (Run unit tests)
