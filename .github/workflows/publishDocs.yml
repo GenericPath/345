@@ -24,7 +24,6 @@ jobs:
       - name: Build dokka documentation with Gradle
         run: |
           ./gradlew dokka
-          mv app/build/dokka/app app/build/dokka/docs
 
       - name: Upload documentation to repo
         uses: JamesIves/github-pages-deploy-action@3.5.9

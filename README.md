@@ -1,5 +1,5 @@
 # OpenOtago - COSC345 Project
-![Test](https://github.com/GenericPath/345/workflows/Test/badge.svg) ![Build & Publish](https://github.com/GenericPath/345/workflows/Build%20&%20Publish/badge.svg) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/69862f4fa1f84105979181bf83eb4340)](https://www.codacy.com/manual/garth.dhnz/345?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GenericPath/345&amp;utm_campaign=Badge_Grade) [![codecov](https://codecov.io/gh/GenericPath/345/branch/master/graph/badge.svg)](https://codecov.io/gh/GenericPath/345)
+![Tests](https://github.com/GenericPath/345/workflows/Tests/badge.svg) ![Build](https://github.com/GenericPath/345/workflows/Build/badge.svg) [![Documentation](https://github.com/GenericPath/345/workflows/Documentation/badge.svg)](https://zyviax.github.io/345Documentation/app/index.html) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/69862f4fa1f84105979181bf83eb4340)](https://www.codacy.com/manual/garth.dhnz/345?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GenericPath/345&amp;utm_campaign=Badge_Grade) [![codecov](https://codecov.io/gh/GenericPath/345/branch/master/graph/badge.svg)](https://codecov.io/gh/GenericPath/345)
 
 
 **OpenOtago is an application to provide a mobile replacement to Univeristy of Otago online resources.**
@@ -10,7 +10,7 @@
 </tr>
 
 <tr>
-    <td>see (to be updated)<a href="https://altitude.otago.ac.nz/lwhitburn/c345-project/-/jobs/artifacts/master/file/public/app/index.html?job=pages">latest documentation</a></td>
+    <td>see <a href="https://zyviax.github.io/345Documentation/app/index.html">latest documentation</a></td>
 </tr>
 </table>
 
@@ -27,8 +27,10 @@ All submitted code runs on the CI pipelines defined in ```.github/workflows/```
  - Tests code quality (lintDebug)
  - Run unit tests (testDebug)
  
- ```buildPublish.yml```
- - Tests debug build success (assembleDebug)    
+ ```build.yml```
+ - Tests debug build success (assembleDebug)  
+
+ ```publishDocs.yml```  
  - Deploy documentation pages (dokka)
 
 ----
