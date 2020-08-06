@@ -4,8 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.internal.platform.content.PermissionGranter
-import androidx.test.runner.permission.PermissionRequester
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,7 +28,7 @@ class InstrumentedTest {
         Log.d("Test", testFileDir.absolutePath)
 
         //Sample fetches
-        val fetches = listOf<PDFListFragment.FetchResult>(
+        val fetches = listOf (
             PDFListFragment.FetchResult(testFileDir.absolutePath + "/marks.php", "cs.otago.ac.nz/cosc242/marks.php", "Marks", FileNavigatorType.MARKS),
             PDFListFragment.FetchResult(testFileDir.absolutePath + "/lectures.php", "cs.otago.ac.nz/cosc242/lectures.php", "Lectures", FileNavigatorType.FOLDER),
             PDFListFragment.FetchResult(testFileDir.absolutePath + "/L01.pdf", "cs.otago.ac.nz/cosc242/pdf/L01.pdf", "Test File", FileNavigatorType.PDF)

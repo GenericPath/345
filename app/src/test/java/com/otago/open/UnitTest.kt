@@ -1,10 +1,7 @@
 package com.otago.open
 
-import android.content.ContextWrapper
 import org.junit.Test
-
 import org.junit.Assert.*
-import java.io.File
 
 /**
  * Example local unit test, which will execute on the development machine (host).
