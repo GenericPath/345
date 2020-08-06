@@ -48,11 +48,11 @@ Features fetching, storing and viewing lecture slides for Computer Science paper
 
 -   Clone the repository
 -   *Option 1* - Android Studio:
--       Open with Android Studio, wait for initial gradle setup
--       Build (Ctrl+F9) / Emulate (Shift+F10)
+-         Open with Android Studio, wait for initial gradle setup
+-         Build (Ctrl+F9) / Emulate (Shift+F10)
 -   *Option 2* - *NIX:
--       ./gradlew assembleDebug
--       install ```/app/build/outputs/apk/debug/app-debug.apk``` onto device
+-         ./gradlew assembleDebug
+-         install /app/build/outputs/apk/debug/app-debug.apk onto device
 
 **To build documentation locally:**
 
