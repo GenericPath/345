@@ -19,7 +19,7 @@ import java.io.File
 @RunWith(AndroidJUnit4::class)
 class InstrumentedTest {
     /**
-     * Run test for [PDFListFragment.PDFService.createMetaFile] and [PDFListFragment.PDFService.loadMetaFile]
+     * Run test for [PDFOperations.createMetaFile] and [PDFOperations.loadMetaFile]
      */
     @Test
     fun fetchSerialiseCorrect() {
@@ -48,16 +48,16 @@ class InstrumentedTest {
                 File(it.itemFile).createNewFile()
             }
             //Create pretend meta file
-            PDFListFragment.PDFService.createMetaFile(testFileDir.absolutePath, fName, it)
+            PDFOperations.createMetaFile(testFileDir.absolutePath, fName, it)
 
             //Load pretend meta file
-            val fetch = PDFListFragment.PDFService.loadMetaFile(it.itemFile)
+            val fetch = PDFOperations.loadMetaFile(it.itemFile)
 
             //Check that what we put in is what we get out
             assertEquals(fetch, it)
         }
 
         val folderListing = PDFListFragment().generateFolderList(testFileDir.absolutePath)
-        assertEquals(folderListing, PDFListFragment.PDFService.generatePdfItems(fetches))
+        assertEquals(folderListing, PDFOperations.generatePdfItems(fetches))
     }
 }

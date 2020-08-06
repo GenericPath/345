@@ -129,6 +129,8 @@ class PDFViewFragment : Fragment() {
     /**
      * Coroutine to download a PDF file (or any other file) to a temporary directory
      * if it hasn't been downloaded yet
+     *
+     * This can safely be an object since this represents the end of any navigation
      */
     object TempService {
         /**
@@ -148,7 +150,7 @@ class PDFViewFragment : Fragment() {
         fun startService(url: String, parentFolder: String, fileName: String, inFragment: PDFViewFragment, pdfView: PDFView) {
             //Launch coroutine
             coroutineScope.launch {
-                PDFListFragment.PDFService.downloadFile(url, parentFolder, fileName)
+                PDFOperations.downloadFile(url, parentFolder, fileName)
 
                 withContext(Dispatchers.Main) {
                     inFragment.http_bar.visibility = View.GONE

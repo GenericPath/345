@@ -10,25 +10,28 @@ import org.junit.Assert.*
  */
 class UnitTest {
     /**
-     * Run test for [PDFListFragment.PDFService.determinePath]
+     * Run test for [PDFOperations.determinePath]
      */
     @Test
     fun urlProcessIsCorrect() {
-        assertEquals("https://cs.otago.ac.nz/cosc242/pdf/L02.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "pdf/L02.pdf"))
-        assertEquals("https://cs.otago.ac.nz/cosc242/pdf/L03.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "./pdf/L03.pdf"))
-        assertEquals("https://cs.otago.ac.nz/cosc242/pdf/L04.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "/cosc242/pdf/L04.pdf"))
-        assertEquals("https://cs.otago.ac.nz/cosc244/pdf/L05.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "/cosc244/pdf/L05.pdf"))
-        assertEquals("https://cs.otago.ac.nz/comp160/contacts.php", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/comp160/contacts.php", "./contacts.php"))
-        assertEquals("https://cs.otago.ac.nz/comp160/information.php", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/comp160/contacts.php", "./information.php"))
-        assertEquals("https://example.com", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "https://example.com"))
-        assertEquals("https://example.com", PDFListFragment.PDFService.determinePath("https://adsb.whitburn.nz", "http://example.com"))
-        assertEquals("https://cs.otago.ac.nz/cosc244/pdf/L01.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc244/pdf/", "L01.pdf"))
-        assertEquals("https://cs.otago.ac.nz/L04.pdf", PDFListFragment.PDFService.determinePath("https://cs.otago.ac.nz/cosc244/pdf", "/L04.pdf"))
+        assertEquals("https://cs.otago.ac.nz/cosc242/pdf/L02.pdf", PDFOperations.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "pdf/L02.pdf"))
+        assertEquals("https://cs.otago.ac.nz/cosc242/pdf/L03.pdf", PDFOperations.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "./pdf/L03.pdf"))
+        assertEquals("https://cs.otago.ac.nz/cosc242/pdf/L04.pdf", PDFOperations.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "/cosc242/pdf/L04.pdf"))
+        assertEquals("https://cs.otago.ac.nz/cosc244/pdf/L05.pdf", PDFOperations.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "/cosc244/pdf/L05.pdf"))
+        assertEquals("https://cs.otago.ac.nz/comp160/contacts.php", PDFOperations.determinePath("https://cs.otago.ac.nz/comp160/contacts.php", "./contacts.php"))
+        assertEquals("https://cs.otago.ac.nz/comp160/information.php", PDFOperations.determinePath("https://cs.otago.ac.nz/comp160/contacts.php", "./information.php"))
+        assertEquals("https://example.com", PDFOperations.determinePath("https://cs.otago.ac.nz/cosc242/lectures.php", "https://example.com"))
+        assertEquals("https://example.com", PDFOperations.determinePath("https://adsb.whitburn.nz", "http://example.com"))
+        assertEquals("https://cs.otago.ac.nz/cosc244/pdf/L01.pdf", PDFOperations.determinePath("https://cs.otago.ac.nz/cosc244/pdf/", "L01.pdf"))
+        assertEquals("https://cs.otago.ac.nz/L04.pdf", PDFOperations.determinePath("https://cs.otago.ac.nz/cosc244/pdf", "/L04.pdf"))
     }
 
+    /**
+     * Run test for [PDFOperations.generatePdfItems]
+     */
     @Test
     fun checkUrlFetchFolder() {
-        val fetchResult = PDFListFragment.PDFService.fetchLinks("testFolder", "https://cs.otago.ac.nz/cosc242/index.php", true)
+        val fetchResult = PDFOperations.fetchLinks("testFolder", "https://cs.otago.ac.nz/cosc242/index.php", true)
         val fetchList = listOf(
             PDFListFragment.FetchResult("testFolder/assessment.php", "https://cs.otago.ac.nz/cosc242/assessment.php", "Assessment", FileNavigatorType.FOLDER),
             PDFListFragment.FetchResult("testFolder/lectures.php", "https://cs.otago.ac.nz/cosc242/lectures.php", "Lectures", FileNavigatorType.FOLDER),
@@ -47,6 +50,6 @@ class UnitTest {
             PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolder/tutorials.php", "https://cs.otago.ac.nz/cosc242/tutorials.php", "Tutorials")
         )
         assertEquals(fetchResult, fetchList)
-        assertEquals(PDFListFragment.PDFService.generatePdfItems(fetchResult), pdfList)
+        assertEquals(PDFOperations.generatePdfItems(fetchResult), pdfList)
     }
 }

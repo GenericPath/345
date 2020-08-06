@@ -31,10 +31,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_fetch.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
 import org.jsoup.UnsupportedMimeTypeException
@@ -60,6 +57,11 @@ class FetchFragment : Fragment() {
      * The navigation arguments, for whether to list or download files
      */
     private val args : FetchFragmentArgs by navArgs()
+
+    /**
+     * The coroutine to use for checking for courses
+     */
+    private var courseService: CourseService? = null
 
     /**
      * Entry point for creating a [FetchFragment]
@@ -100,8 +102,24 @@ class FetchFragment : Fragment() {
             Toast.makeText(context, "Failed to load previous state - fetching again", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
             http_bar.visibility = View.VISIBLE
-            CourseService.startService(this)
+            startCourseService(true)
         }
+    }
+
+    /**
+     * Determine whether to start a course fetch (again)
+     */
+    private fun startCourseService(alwaysTry: Boolean) {
+        //If we don't have a course service create one and run it
+        if (courseService == null) {
+            courseService = CourseService()
+        } else if (courseService!!.isActive or !alwaysTry) {
+            //If it's running or we don't have to always try to run it again then don't bother
+            return
+        }
+
+        courseService!!.startService(this)
+
     }
 
     /**
@@ -181,11 +199,11 @@ class FetchFragment : Fragment() {
                             }
 
                             //Load the meta file for the current file / folder
-                            val meta = PDFListFragment.PDFService.loadMetaFile(it.absolutePath)
+                            val meta = PDFOperations.loadMetaFile(it.absolutePath)
 
                             //Add the course to the course items
                             result += CourseItem(
-                                PDFListFragment.PDFService.getResourceItem(meta.type),
+                                PDFOperations.getResourceItem(meta.type),
                                 meta.coscName,
                                 meta.itemUrl,
                                 meta.coscName.toLowerCase(Locale.ROOT)
@@ -202,7 +220,7 @@ class FetchFragment : Fragment() {
                 } else {
                     //If we are checking the UoO website then show the progress bar and start the service
                     http_bar.visibility = View.VISIBLE
-                    CourseService.startService(this)
+                    startCourseService(false)
                 }
             }
             else -> {
@@ -240,7 +258,7 @@ class FetchFragment : Fragment() {
         //Create a "fake" fetch result which corresponds to the course folder, the index.php url, the course code (uppercase when presented), and make sure it's a folder
         val metaFileFetchResult = PDFListFragment.FetchResult(courseFolder, item.courseUrl, item.courseCode.toUpperCase(Locale.ROOT), FileNavigatorType.FOLDER)
         //Save the meta file using the fetch result
-        PDFListFragment.PDFService.createMetaFile(ContextWrapper(context).filesDir.absolutePath, item.courseCode, metaFileFetchResult)
+        PDFOperations.createMetaFile(ContextWrapper(context).filesDir.absolutePath, item.courseCode, metaFileFetchResult)
 
         //Move to the fragment for listing files etc. Make sure to preserve the listFiles argument
         val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(courseFolder, item.courseCode,  args.listFiles)
@@ -251,11 +269,17 @@ class FetchFragment : Fragment() {
      * Coordinates fetching the course web-pages from the university website
      * Use [CourseService.startService] to begin
      */
-    object CourseService {
+    class CourseService {
         /**
          * The coroutine scope for this coroutine service
          */
         private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
+        /**
+         * Whether the current coroutine is running
+         */
+        val isActive: Boolean
+            get() = coroutineScope.isActive
 
         /**
          * Starts this service
