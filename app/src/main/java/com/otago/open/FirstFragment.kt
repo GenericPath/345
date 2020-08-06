@@ -59,13 +59,14 @@ class FirstFragment : Fragment() {
 
         //Go to list view
         view.findViewById<Button>(R.id.listTest).setOnClickListener {
-            val action = FirstFragmentDirections.actionFirstFragmentToRecyclerViewFragment(ContextWrapper(context).filesDir.absolutePath, "", true)
-            NavHostFragment.findNavController(nav_host_fragment).navigate(action)
+            val action = FirstFragmentDirections.actionFirstFragmentToFetchFragment(true)
+            findNavController().navigate(action)
         }
 
         //Go to fetch view
         view.findViewById<Button>(R.id.fetchTest).setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_fetchFragment)
+            val action = FirstFragmentDirections.actionFirstFragmentToFetchFragment(false)
+            findNavController().navigate(action)
         }
     }
 }

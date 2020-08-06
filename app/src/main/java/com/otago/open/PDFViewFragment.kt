@@ -127,9 +127,25 @@ class PDFViewFragment : Fragment() {
         }
     }
 
+    /**
+     * Coroutine to download a PDF file (or any other file) to a temporary directory
+     * if it hasn't been downloaded yet
+     */
     object TempService {
+        /**
+         * The coroutine scope for this coroutine service
+         */
         private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
+        /**
+         * Starts the file download
+         *
+         * @param url The URL from which to download the file
+         * @param parentFolder The folder to download the file into
+         * @param fileName The name for the downloaded file
+         * @param inFragment The instance of [PDFViewFragment], to call in class functions
+         * @param pdfView The [PDFView] 
+         */
         fun startService(url: String, parentFolder: String, fileName: String, inFragment: PDFViewFragment, pdfView: PDFView) {
             //Launch coroutine
             coroutineScope.launch {

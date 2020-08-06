@@ -42,6 +42,7 @@ import org.jsoup.Jsoup
 import org.jsoup.UnsupportedMimeTypeException
 import org.jsoup.nodes.Document
 import java.io.*
+import java.lang.Exception
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
@@ -54,6 +55,14 @@ import kotlin.collections.ArrayList
  * A [Fragment] that generates each [PDFItem] to display.
  */
 class PDFListFragment : Fragment() {
+    /**
+     * Data class for fetched folders / PDFs from the COSC website
+     *
+     * @param itemFile When this particular file (indicated vis [itemUrl] should be saved
+     * @param itemUrl The URL of the item (folder / PDF) to ferch
+     * @param coscName The name of the item on the COSC website
+     * @param type The type of the item (folder or PDF etc)
+     */
     data class FetchResult(val itemFile: String, val itemUrl: String, val coscName: String, val type: FileNavigatorType)
 
     /**
@@ -109,20 +118,19 @@ class PDFListFragment : Fragment() {
             http_bar.visibility = View.VISIBLE
         }
 
-        var url = ""
+        var item: FetchResult? = null
+        //Try to load the meta file
         try {
-            val metaName = args.folder + ".meta"
-
-            Log.d("Loading Meta File", metaName)
-
-            val reader = BufferedReader(FileReader(metaName))
-            reader.readLine() //Ignore COSC Name
-            url = reader.readLine()
-
+            item = PDFService.loadMetaFile(args.folder)
         } catch (e: IOException) {
             //TODO: Something
         } catch (e: FileNotFoundException) {
             //TODO: Something
+        }
+
+        if (item == null) {
+            //TODO: Something
+            return
         }
 
         //To check network status - we don't want to waste mobile data
@@ -136,9 +144,9 @@ class PDFListFragment : Fragment() {
             Log.d("PDF Service", "Starting")
             PDFService.startService(
                 args.folder,
-                url,
+                item.itemUrl,
                 this,
-                url.endsWith("index.php")
+                item.itemUrl.endsWith("index.php")
             ) //Only look for folders on the index page!
 
             //If we're going to actually do something show a toast
@@ -206,23 +214,11 @@ class PDFListFragment : Fragment() {
 
         //Only select PDFs and directories
         files?.forEach {
+            if (it.absolutePath.endsWith(".meta")) {
+                return@forEach
+            }
             try {
-                val reader = BufferedReader(FileReader(it.absolutePath + ".meta"))
-                val coscName = reader.readLine()
-                val itemUrl = reader.readLine()
-                val fileNavType = when {
-                    it.extension.toLowerCase(Locale.ROOT) == "pdf" -> {
-                        FileNavigatorType.PDF
-                    }
-                    it.isDirectory -> {
-                        FileNavigatorType.FOLDER
-                    }
-                    else -> {
-                        return@forEach
-                    }
-                }
-
-                result += FetchResult(it.absolutePath, itemUrl, coscName, fileNavType)
+                result += PDFService.loadMetaFile(it.absolutePath)
             } catch (e: IOException) {
                 //TODO: Something
                 return@forEach
@@ -260,18 +256,13 @@ class PDFListFragment : Fragment() {
                     args.paperCode.isBlank() -> {
                         //If the paper code is blank then we are just listing paper folders
                         //So we want to "guess" the URL and paper code, and set them before moving on
-                        val codeGuess = item.itemFile.substringAfterLast('/', "").toLowerCase(Locale.ROOT)
+                        val codeGuess =
+                            item.itemFile.substringAfterLast('/', "").toLowerCase(Locale.ROOT)
                         PDFListFragmentDirections.actionPDFListFragmentSelf(
                             item.itemFile,
                             codeGuess,
                             args.listFiles
                         )
-                    }
-                    item.itemFile.endsWith("marks.php") -> {
-                        //For the marks we want to go to the marks frame
-                        //Sometimes makes a // as apposed to a / here but it seems to work
-                        Log.d("Mark View POST", item.itemUrl)
-                        PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(item.itemUrl)
                     }
                     else -> {
                         //Otherwise just go to where the PDFItem tells us
@@ -283,6 +274,12 @@ class PDFListFragment : Fragment() {
                     }
                 }
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
+            }
+            FileNavigatorType.MARKS -> {
+                //For the marks we want to go to the marks frame
+                //Sometimes makes a // as apposed to a / here but it seems to work
+                Log.d("Mark View POST", item.itemUrl)
+                NavHostFragment.findNavController(nav_host_fragment).navigate(PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(item.itemUrl))
             }
         }
     }
@@ -330,7 +327,14 @@ class PDFListFragment : Fragment() {
                 if (fetchedLinks.size > 0) {
                     downloadPDF(fetchedLinks)
                 }
+            }
+        }
 
+        fun getResourceItem(navType: FileNavigatorType): Int {
+            return when (navType) {
+                FileNavigatorType.FOLDER -> R.drawable.ic_folder
+                FileNavigatorType.PDF -> R.drawable.ic_pdf
+                FileNavigatorType.MARKS -> R.drawable.ic_thumb //TODO: New icon
             }
         }
 
@@ -344,14 +348,9 @@ class PDFListFragment : Fragment() {
         fun generatePdfItems(fetched: List<FetchResult>) : List<PDFItem> {
             val pdfs = ArrayList<PDFItem>(fetched.size)
             fetched.forEach {
-                val drawable = when (it.type) {
-                    FileNavigatorType.FOLDER -> R.drawable.ic_folder
-                    FileNavigatorType.PDF -> R.drawable.ic_pdf
-                }
 
-                pdfs.add(PDFItem(drawable, it.type, it.itemFile, it.itemUrl, it.coscName))
+                pdfs.add(PDFItem(getResourceItem(it.type), it.type, it.itemFile, it.itemUrl, it.coscName))
             }
-
             return pdfs
         }
 
@@ -364,27 +363,37 @@ class PDFListFragment : Fragment() {
          *
          * If [href] is a http(s) link we just return it
          *
+         * This method does not have any special handling for any .. or repeated ././
+         *
          * @param onPageUrl The page that the link is on, or the folder that the [href] is relative to
          * @param href The href
          *
          * @return Where [href] should point if it appears on a page [onPageUrl], or if it is a sub-resource of a folder [onPageUrl]
          */
         fun determinePath(onPageUrl: String, href: String): String {
+            //If it's a full URL just return it
             if (href.startsWith("http")) {
                 return href
             }
+
+            //If it starts with ./ then this is the same as starting without that
             val trimHref = if (href.startsWith("./")) {
                 href.replaceFirst("./", "")
             } else {
                 href
             }
+
             return when {
+                //If we are relative to a folder, just concatenate the folder and sub-directory
                 onPageUrl.endsWith("/") -> {
                     "$onPageUrl/$trimHref"
                 }
+                //If the href is absolute then just concatenate the COSC website and the href
                 trimHref.startsWith('/') -> {
                     return "https://cs.otago.ac.nz$trimHref"
                 }
+                //Otherwise just trim the filename from the onPageUrl (if there is no parent folder, just return "")
+                //And add the href to it
                 else -> {
                     onPageUrl.substringBeforeLast("/", "") + "/$trimHref"
                 }
@@ -438,8 +447,15 @@ class PDFListFragment : Fragment() {
                         //Don't fetch the home page (we're already there)
                         if (!newUrl.endsWith("index.php")) {
                             val name = it.text()
+
+                            //If it's a marks page adjust the navigator type accordingly
+                            val navType = if (newUrl.endsWith("marks.php")) {
+                                    FileNavigatorType.MARKS }
+                            else {
+                                FileNavigatorType.FOLDER
+                            }
                             Log.d("Detected Name", name)
-                            links += FetchResult("$parentFolder/$hrefName", newUrl, name, FileNavigatorType.FOLDER)
+                            links += FetchResult("$parentFolder/$hrefName", newUrl, name, navType)
                             Log.d("Found Folder (URL)", newUrl)
                         }
                     }
@@ -465,20 +481,63 @@ class PDFListFragment : Fragment() {
             return links
         }
 
+        /**
+         * Creates a meta file for the file indicated via [saveFile] based on the [FetchResult] [it]
+         * This creates the file [saveFile].meta
+         *
+         * @param saveFile The file to create a meta file for
+         * @param it The [FetchResult] to (partially) save in the meta file
+         */
         private fun createMetaFile(saveFile: String, it: FetchResult) {
+            //Open a file to write
             val metaStream = BufferedWriter(PrintWriter(FileOutputStream("$saveFile.meta")))
 
+            //Write the COSC name and URL
             metaStream.write(it.coscName)
             metaStream.newLine()
             metaStream.write(it.itemUrl)
             metaStream.newLine() //THE MOST IMPORTANT LINE IN THIS WHOLE APP!!!!!!!!!!!!!!!!
             //Each time you create a file that doesn't end with a newline Ken Thompson and Dennis Ritchie (RIP) shed a single tear
 
+            //Close the file stream
             metaStream.close()
         }
 
+        /**
+         * Creates a meta file for the file indicated via [saveFolder] and [fileName]
+         * based on the [FetchResult] [it]
+         *
+         * This creates the file [saveFolder]/[fileName].meta
+         */
         fun createMetaFile(saveFolder: String, fileName: String, it: FetchResult) {
             createMetaFile("$saveFolder/$fileName", it)
+        }
+
+        fun loadMetaFile(assFile: String): FetchResult {
+            val metaName = "$assFile.meta"
+
+            Log.d("Loading Meta File", metaName)
+
+            val reader = BufferedReader(FileReader(metaName))
+            val coscName = reader.readLine()
+            val url = reader.readLine()
+            val navType = when {
+                assFile.endsWith(".pdf", true) -> {
+                    FileNavigatorType.PDF
+                }
+                assFile.endsWith("marks.php", true) -> {
+                    FileNavigatorType.MARKS
+                }
+                File(assFile).isDirectory -> {
+                    FileNavigatorType.FOLDER
+                }
+                else -> {
+                    throw Exception("")
+                }
+            }
+
+            return FetchResult(assFile, url, coscName, navType)
+
         }
 
         fun downloadFile(url: String, parentDir: String, fileName: String): String? {
@@ -559,6 +618,19 @@ class PDFListFragment : Fragment() {
 
                         createMetaFile(parentDir, fileName, it)
 
+                    } catch (e: FileNotFoundException) {
+                        //TODO: Something here
+                        e.printStackTrace()
+                        return@forEach
+                    } catch (e: IOException) {
+                        //TODO: Something here
+                        e.printStackTrace()
+                        return@forEach
+                    }
+                    return@forEach
+                } else if (it.type == FileNavigatorType.MARKS) {
+                    try {
+                        createMetaFile(parentDir, fileName, it)
                     } catch (e: FileNotFoundException) {
                         //TODO: Something here
                         e.printStackTrace()

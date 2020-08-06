@@ -71,7 +71,8 @@ class PDFItemRecyclerViewAdapter(
         holder.textView1.text = currentItem.coscName
         holder.textView2.text = when (currentItem.pathType) {
             FileNavigatorType.PDF -> "PDF"
-            FileNavigatorType.FOLDER -> "folder"
+            FileNavigatorType.FOLDER -> "Folder"
+            FileNavigatorType.MARKS -> "Marks"
         }
     }
 
@@ -114,7 +115,8 @@ class PDFItemRecyclerViewAdapter(
             textView1.text = item.coscName
             textView2.text = when (item.pathType) {
                 FileNavigatorType.PDF -> "PDF"
-                FileNavigatorType.FOLDER -> "folder"
+                FileNavigatorType.FOLDER -> "Folder"
+                FileNavigatorType.MARKS -> "Marks"
             }
         }
     }

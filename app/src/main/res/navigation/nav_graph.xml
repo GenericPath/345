@@ -12,9 +12,6 @@
         tools:layout="@layout/fragment_first">
 
         <action
-            android:id="@+id/action_FirstFragment_to_recyclerViewFragment"
-            app:destination="@id/PDFListFragment" />
-        <action
             android:id="@+id/action_FirstFragment_to_fetchFragment"
             app:destination="@id/FetchFragment" />
     </fragment>
@@ -65,6 +62,11 @@
         android:name="com.otago.open.FetchFragment"
         android:label="fragment_fetch"
         tools:layout="@layout/fragment_fetch" >
+
+        <argument
+            android:name="listFiles"
+            app:argType="boolean" />
+
         <action
             android:id="@+id/action_FetchFragment_to_PDFListFragment"
             app:destination="@id/PDFListFragment" />

@@ -27,6 +27,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_fetch.*
@@ -52,6 +53,8 @@ import kotlin.collections.ArrayList
  */
 class FetchFragment : Fragment() {
     private var adapterItems : List<CourseItem> = emptyList()
+
+    private val args : FetchFragmentArgs by navArgs()
 
     /**
      * Entry point for creating a [FetchFragment]
@@ -159,8 +162,35 @@ class FetchFragment : Fragment() {
             }
             savedInstanceState == null -> {
                 Log.d("Fetch Activity Created", "Fetching")
-                http_bar.visibility = View.VISIBLE
-                CourseService.startService(this)
+                if (args.listFiles) {
+                    val dataFolder = File(ContextWrapper(context).filesDir.absolutePath)
+                    val result = ArrayList<CourseItem>()
+
+                    dataFolder.listFiles()?.forEach {
+                        try {
+                            if (it.absolutePath.endsWith(".meta")) {
+                                return@forEach
+                            }
+
+                            val meta = PDFListFragment.PDFService.loadMetaFile(it.absolutePath)
+
+                            result += CourseItem(
+                                PDFListFragment.PDFService.getResourceItem(meta.type),
+                                meta.coscName,
+                                meta.itemUrl,
+                                meta.coscName.toLowerCase(Locale.ROOT)
+                            )
+                        } catch (e: IOException) {
+                            //TODO: Something
+                        } catch (e: FileNotFoundException) {
+                            //TODO: Something
+                        }
+                    }
+                    setRecyclerItems(result)
+                } else {
+                    http_bar.visibility = View.VISIBLE
+                    CourseService.startService(this)
+                }
             }
             else -> {
                 Log.d("Fetch Activity Created", "Restoring from saved state")
