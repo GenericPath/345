@@ -38,7 +38,6 @@ import kotlinx.coroutines.withContext
 import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
 import org.jsoup.UnsupportedMimeTypeException
-import org.jsoup.nodes.Document
 import java.io.*
 import java.lang.Exception
 import java.lang.IllegalStateException
@@ -52,8 +51,14 @@ import kotlin.collections.ArrayList
  * The class for the fragment to fetch the courses
  */
 class FetchFragment : Fragment() {
+    /**
+     * The items in the recycler
+     */
     private var adapterItems : List<CourseItem> = emptyList()
 
+    /**
+     * The navigation arguments, for whether to list or download files
+     */
     private val args : FetchFragmentArgs by navArgs()
 
     /**
@@ -162,18 +167,23 @@ class FetchFragment : Fragment() {
             }
             savedInstanceState == null -> {
                 Log.d("Fetch Activity Created", "Fetching")
+                //If we are just listing files then we just load from the cache
                 if (args.listFiles) {
+                    //The folder all the courses are stored in
                     val dataFolder = File(ContextWrapper(context).filesDir.absolutePath)
                     val result = ArrayList<CourseItem>()
 
                     dataFolder.listFiles()?.forEach {
                         try {
-                            if (it.absolutePath.endsWith(".meta")) {
+                            //We don't need to list the meta files
+                            if (it.absolutePath.endsWith(".meta", true)) {
                                 return@forEach
                             }
 
+                            //Load the meta file for the current file / folder
                             val meta = PDFListFragment.PDFService.loadMetaFile(it.absolutePath)
 
+                            //Add the course to the course items
                             result += CourseItem(
                                 PDFListFragment.PDFService.getResourceItem(meta.type),
                                 meta.coscName,
@@ -186,13 +196,17 @@ class FetchFragment : Fragment() {
                             //TODO: Something
                         }
                     }
+
+                    //Set the recycler items
                     setRecyclerItems(result)
                 } else {
+                    //If we are checking the UoO website then show the progress bar and start the service
                     http_bar.visibility = View.VISIBLE
                     CourseService.startService(this)
                 }
             }
             else -> {
+                //Restore state
                 Log.d("Fetch Activity Created", "Restoring from saved state")
                 restoreState(savedInstanceState)
             }
@@ -207,7 +221,7 @@ class FetchFragment : Fragment() {
     fun setRecyclerItems(links: List<CourseItem>) {
         adapterItems = links
         //Create our recycler view adapter and the lambda to handle selection
-        recycler_view.adapter = CourseItemRecyclerViewAdapter(links) { link -> selectType(link) }
+        recycler_view.adapter = CourseItemRecyclerViewAdapter(links) { link -> listItems(link) }
         recycler_view.layoutManager = LinearLayoutManager(context)
         recycler_view.setHasFixedSize(true)
     }
@@ -217,11 +231,19 @@ class FetchFragment : Fragment() {
      *
      * @param item The course to delve into
      */
-    private fun selectType(item: CourseItem) {
+    private fun listItems(item: CourseItem) {
         //Want to have it to save into a COSC*** folder, and download from https://cs.otago.ac.nz/cosc***
         val courseFolder = ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode
-        PDFListFragment.PDFService.createMetaFile(ContextWrapper(context).filesDir.absolutePath, item.courseCode, PDFListFragment.FetchResult(courseFolder, item.courseUrl + "/index.php", item.courseCode.toUpperCase(Locale.ROOT), FileNavigatorType.FOLDER))
-        val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(courseFolder, item.courseCode,  false)
+        File(courseFolder).mkdirs()
+
+        //Create the course meta file
+        //Create a "fake" fetch result which corresponds to the course folder, the index.php url, the course code (uppercase when presented), and make sure it's a folder
+        val metaFileFetchResult = PDFListFragment.FetchResult(courseFolder, item.courseUrl, item.courseCode.toUpperCase(Locale.ROOT), FileNavigatorType.FOLDER)
+        //Save the meta file using the fetch result
+        PDFListFragment.PDFService.createMetaFile(ContextWrapper(context).filesDir.absolutePath, item.courseCode, metaFileFetchResult)
+
+        //Move to the fragment for listing files etc. Make sure to preserve the listFiles argument
+        val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(courseFolder, item.courseCode,  args.listFiles)
         NavHostFragment.findNavController(nav_host_fragment).navigate(action)
     }
 
@@ -240,75 +262,64 @@ class FetchFragment : Fragment() {
          *
          * @param inFragment The instance of [FetchFragment], to call in class functions
          */
+        @Suppress("BlockingMethodInNonBlockingContext") //TODO: Why this is needed here
         fun startService(inFragment: FetchFragment) {
             coroutineScope.launch {
-                runService(inFragment)
-            }
-        }
-
-        /**
-         * Runs this service
-         *
-         * @param inFragment The instance of FetchFragment, to call in class functions
-         */
-        private suspend fun runService(inFragment: FetchFragment) {
-            val links = ArrayList<CourseItem>()
-            try {
-                //URL for the COSC papers page
-                val document: Document =
-                    //TODO: Fix inappropriate blocking call
-                    Jsoup.connect("https://www.otago.ac.nz/computer-science/study/otago673578.html")
-                        .get()
-                //Content div
-                val contents = document.select("#content")
-                contents.forEach { docIt ->
-                    //Links
-                    val hrefs = docIt.select("a[href]")
-                    hrefs.forEach { linkIt ->
-                        val infoUrl = linkIt.attr("href")
-                        val courseCode = infoUrl.substring(infoUrl.length - 7)
-                        val courseUrl = "https://cs.otago.ac.nz/" + courseCode.toLowerCase(Locale.ROOT)
-                        val courseName = linkIt.html()
-                        links.add(
-                            CourseItem(
-                                R.drawable.ic_folder,
-                                courseName,
-                                courseUrl,
-                                courseCode
+                val links = ArrayList<CourseItem>()
+                try {
+                    //URL for the COSC papers page
+                    val document = Jsoup.connect("https://www.otago.ac.nz/computer-science/study/otago673578.html").get()
+                    //Content div
+                    val contents = document.select("#content")
+                    contents.forEach { docIt ->
+                        //Links
+                        val hrefs = docIt.select("a[href]")
+                        hrefs.forEach { linkIt ->
+                            val infoUrl = linkIt.attr("href")
+                            val courseCode = infoUrl.substring(infoUrl.length - 7).toLowerCase(Locale.ROOT)
+                            val courseUrl = "https://cs.otago.ac.nz/$courseCode/index.php" //Need to include index at end because of weird redirects if we don't
+                            val courseName = linkIt.html()
+                            links.add(
+                                CourseItem(
+                                    R.drawable.ic_folder,
+                                    courseName,
+                                    courseUrl,
+                                    courseCode
+                                )
                             )
-                        )
-                        Log.d("Added Course", "$courseName with URL $courseUrl")
+                            Log.d("Added Course", "$courseName with URL $courseUrl")
+                        }
                     }
+                } catch (e: MalformedURLException) {
+                    //TODO: Do something here
+                    e.printStackTrace()
+                } catch (e: HttpStatusException) {
+                    //TODO: Do something here
+                    e.printStackTrace()
+                } catch (e: UnsupportedMimeTypeException) {
+                    //TODO: Do something here
+                    e.printStackTrace()
+                } catch (e: SocketTimeoutException) {
+                    //TODO: Do something here
+                    e.printStackTrace()
+                } catch (e: IOException) {
+                    //TODO: Do something here
+                    e.printStackTrace()
                 }
-            } catch (e: MalformedURLException) {
-                //TODO: Do something here
-                e.printStackTrace()
-            } catch (e: HttpStatusException) {
-                //TODO: Do something here
-                e.printStackTrace()
-            } catch (e: UnsupportedMimeTypeException) {
-                //TODO: Do something here
-                e.printStackTrace()
-            } catch (e: SocketTimeoutException) {
-                //TODO: Do something here
-                e.printStackTrace()
-            } catch (e: IOException) {
-                //TODO: Do something here
-                e.printStackTrace()
-            }
 
-            try {
-                withContext(Dispatchers.Main) {
-                    //Update the UI on completion of paper fetch
-                    inFragment.http_bar.visibility = View.GONE
-                    inFragment.setRecyclerItems(links.toList())
+                try {
+                    withContext(Dispatchers.Main) {
+                        //Update the UI on completion of paper fetch
+                        inFragment.http_bar.visibility = View.GONE
+                        inFragment.setRecyclerItems(links.toList())
+                    }
+                } catch (e: IllegalStateException) {
+                    //Just stop if the fragment is gone
+                    return@launch
+                } catch (e: NullPointerException) {
+                    //Just stop if the fragment is gone
+                    return@launch
                 }
-            } catch (e: IllegalStateException) {
-                //Just stop if the fragment is gone
-                return
-            } catch (e: NullPointerException) {
-                //Just stop if the fragment is gone
-                return
             }
         }
     }

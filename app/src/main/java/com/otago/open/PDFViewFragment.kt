@@ -20,7 +20,6 @@ package com.otago.open
 
 //https://github.com/barteksc/AndroidPdfViewer
 import android.content.ContextWrapper
-import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater

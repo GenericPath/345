@@ -18,24 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package com.otago.open
 
-import android.app.AlertDialog
-import android.content.DialogInterface
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
-import android.widget.EditText
+import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 /**
  * A [Fragment] to view marks.
@@ -71,61 +62,30 @@ class MarkViewFragment : Fragment() {
      * @param view The current view
      * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
      */
+    @SuppressLint("SetJavaScriptEnabled") //Otherwise it complains about XSS - but that's the CS department's problem
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val markView = view.findViewById<WebView>(R.id.markView)
 
-        //Create an alert dialog
-        val builder = AlertDialog.Builder(this.context)
+        val width = "100vw"
 
-        //Input validation is the CS website's problem - but we will restrict them to numbers
-        val input = EditText(this.context)
-        input.inputType = InputType.TYPE_CLASS_NUMBER
+        markView.settings.javaScriptEnabled = true
 
-        //Add the text input to the alert
-        builder.setView(input)
+        markView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                //super.onPageFinished(view, url)
 
-        //Add an OK button
-        builder.setPositiveButton("Submit") { _: DialogInterface, _: Int ->
-            MarksService.startService(args.postUrl, input.text.toString(), this)
-        }
-
-        //Add a cancel buton to take us back
-        builder.setNegativeButton("Cancel") { _: DialogInterface, _: Int ->
-            findNavController().popBackStack() //Go back?
-        }
-
-        builder.show()
-    }
-
-    /**
-     * Sends an HTTP POST request to the CS website to grab some marks HTML.
-     */
-    object MarksService {
-        private val coroutineScope = CoroutineScope(Dispatchers.IO)
-
-        /**
-         * Sends the POST request.
-         *
-         * @param postUrl The url to send the request to
-         * @param id The student ID (who's marks to check)
-         * @param inFragment The instance of [MarkViewFragment], to call in class functions
-         */
-        fun startService(postUrl: String, id: String, inFragment: Fragment) {
-            coroutineScope.launch {
-                //TODO: Another inappropriate blocking method call
-                //Open a connection with jsoup - we need to clean up the returned data.
-                val document: Document =
-                    Jsoup.connect(postUrl).data("stu_id", id).data("submit", "Submit").post()
-
-                //css selector for filtering - see https://try.jsoup.org/
-                val html = document.select("div#coursepagefullwidth ul").first().html()
-
-                //Get the web view with which to render the marks and load the filtered HTML into it
-                val markView = inFragment.view!!.findViewById<WebView>(R.id.markView)
-                withContext(Dispatchers.Main) {
-                    markView.loadData(html, "text/html", "UTF-8")
-                }
+                //No questions please
+                //Okay, fine
+                //It first trims the header and footer,
+                //Then replaces the content with only the main portion
+                //Then constrains the width of certain divs and any form
+                //Then trims the footer so that poor Sandy from COMP160 isn't incorrectly associated
+                //With this app
+                view.loadUrl("javascript:(function(){if (document.getElementById('coursepage_topbar')) document.getElementById('coursepage_topbar').outerHTML=\"\";if (document.getElementById('coursepage_footer')) document.getElementById('coursepage_footer').outerHTML=\"\";if (document.getElementById('centralbar')) document.getElementById('centralbar').innerHTML = document.getElementById('coursepagefullwidth').innerHTML; if (document.getElementById('outline-container-sec-1')) document.getElementById('centralbar').style = \"width: $width\"; if (document.getElementById('outline-container-sec-1')) document.getElementById('outline-container-sec-1').style = \"width: $width\"; if (document.getElementsByTagName('form')) document.getElementsByTagName('form')[0].style=\"width:$width\"; if (document.getElementsByClassName('footer')) document.getElementsByClassName('footer')[0].outerHTML=\"\";})()")
             }
         }
+
+        markView.loadUrl(args.postUrl)
     }
 }
