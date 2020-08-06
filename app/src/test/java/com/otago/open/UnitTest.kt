@@ -31,25 +31,51 @@ class UnitTest {
      */
     @Test
     fun checkUrlFetchFolder() {
-        val fetchResult = PDFOperations.fetchLinks("testFolder", "https://cs.otago.ac.nz/cosc242/index.php", true)
+        val fetchResult = PDFOperations.fetchLinks("testFolderUrlFetch", "https://cs.otago.ac.nz/cosc242/index.php", true)
         val fetchList = listOf(
-            PDFListFragment.FetchResult("testFolder/assessment.php", "https://cs.otago.ac.nz/cosc242/assessment.php", "Assessment", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult("testFolder/lectures.php", "https://cs.otago.ac.nz/cosc242/lectures.php", "Lectures", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult("testFolder/marks.php", "https://cs.otago.ac.nz/cosc242/marks.php", "Marks", FileNavigatorType.MARKS),
-            PDFListFragment.FetchResult("testFolder/resources.php", "https://cs.otago.ac.nz/cosc242/resources.php", "Resources", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult("testFolder/staff.php", "https://cs.otago.ac.nz/cosc242/staff.php", "Staff", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult("testFolder/tutorials.php", "https://cs.otago.ac.nz/cosc242/tutorials.php", "Tutorials", FileNavigatorType.FOLDER)
+            PDFListFragment.FetchResult("testFolderUrlFetch/assessment.php", "https://cs.otago.ac.nz/cosc242/assessment.php", "Assessment", FileNavigatorType.FOLDER),
+            PDFListFragment.FetchResult("testFolderUrlFetch/lectures.php", "https://cs.otago.ac.nz/cosc242/lectures.php", "Lectures", FileNavigatorType.FOLDER),
+            PDFListFragment.FetchResult("testFolderUrlFetch/marks.php", "https://cs.otago.ac.nz/cosc242/marks.php", "Marks", FileNavigatorType.MARKS),
+            PDFListFragment.FetchResult("testFolderUrlFetch/resources.php", "https://cs.otago.ac.nz/cosc242/resources.php", "Resources", FileNavigatorType.FOLDER),
+            PDFListFragment.FetchResult("testFolderUrlFetch/staff.php", "https://cs.otago.ac.nz/cosc242/staff.php", "Staff", FileNavigatorType.FOLDER),
+            PDFListFragment.FetchResult("testFolderUrlFetch/tutorials.php", "https://cs.otago.ac.nz/cosc242/tutorials.php", "Tutorials", FileNavigatorType.FOLDER)
         )
 
         val pdfList = listOf(
-            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER,"testFolder/assessment.php", "https://cs.otago.ac.nz/cosc242/assessment.php", "Assessment"),
-            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolder/lectures.php", "https://cs.otago.ac.nz/cosc242/lectures.php", "Lectures"),
-            PDFItem(R.drawable.ic_thumb, FileNavigatorType.MARKS, "testFolder/marks.php", "https://cs.otago.ac.nz/cosc242/marks.php", "Marks"),
-            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolder/resources.php", "https://cs.otago.ac.nz/cosc242/resources.php", "Resources"),
-            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolder/staff.php", "https://cs.otago.ac.nz/cosc242/staff.php", "Staff"),
-            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolder/tutorials.php", "https://cs.otago.ac.nz/cosc242/tutorials.php", "Tutorials")
+            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER,"testFolderUrlFetch/assessment.php", "https://cs.otago.ac.nz/cosc242/assessment.php", "Assessment"),
+            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolderUrlFetch/lectures.php", "https://cs.otago.ac.nz/cosc242/lectures.php", "Lectures"),
+            PDFItem(R.drawable.ic_thumb, FileNavigatorType.MARKS, "testFolderUrlFetch/marks.php", "https://cs.otago.ac.nz/cosc242/marks.php", "Marks"),
+            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolderUrlFetch/resources.php", "https://cs.otago.ac.nz/cosc242/resources.php", "Resources"),
+            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolderUrlFetch/staff.php", "https://cs.otago.ac.nz/cosc242/staff.php", "Staff"),
+            PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolderUrlFetch/tutorials.php", "https://cs.otago.ac.nz/cosc242/tutorials.php", "Tutorials")
         )
         assertEquals(fetchResult, fetchList)
         assertEquals(PDFOperations.generatePdfItems(fetchResult), pdfList)
+    }
+
+    /**
+     * Run test for [PDFOperations.generatePdfItems]
+     */
+    @Test
+    fun checkUrlFetchPdf() {
+        val fetchResult = PDFOperations.fetchLinks("testFolderPdfFetch", "https://cs.otago.ac.nz/cosc244/lectures.php", false)
+        val pdfResult = PDFOperations.generatePdfItems(listOf (fetchResult[0], fetchResult[1])) //Don't test stuff that isn't checked
+
+        val fetchList = listOf(
+            PDFListFragment.FetchResult("testFolderPdfFetch/L1.pdf", "https://cs.otago.ac.nz/cosc244/pdf/L1.pdf", "Introduction to Data Communications", FileNavigatorType.PDF),
+            PDFListFragment.FetchResult("testFolderPdfFetch/L2.pdf", "https://cs.otago.ac.nz/cosc244/pdf/L2.pdf", "Signals and Encoding", FileNavigatorType.PDF)
+        )
+
+        val pdfList = listOf(
+            PDFItem(R.drawable.ic_pdf, FileNavigatorType.PDF,"testFolderPdfFetch/L1.pdf", "https://cs.otago.ac.nz/cosc244/pdf/L1.pdf", "Introduction to Data Communications"),
+            PDFItem(R.drawable.ic_pdf, FileNavigatorType.PDF, "testFolderPdfFetch/L2.pdf", "https://cs.otago.ac.nz/cosc244/pdf/L2.pdf", "Signals and Encoding")
+        )
+
+        //Only check first two...
+        assertEquals(fetchResult[0], fetchList[0])
+        assertEquals(fetchResult[1], fetchList[1])
+        assertEquals(pdfResult[0], pdfList[0])
+        assertEquals(pdfResult[1], pdfList[1])
+
     }
 }
