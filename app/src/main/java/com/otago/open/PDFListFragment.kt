@@ -99,8 +99,9 @@ class PDFListFragment : Fragment() {
         recycler_view.layoutManager = LinearLayoutManager(context)
         recycler_view.setHasFixedSize(true)
 
-        if (args.listFiles) {
-            //If we are just listing files (no HTTP) then we can just set the recycler items
+        if (args.listFiles || visited) {
+            //If we are just listing files (no HTTP) or we have already visited this page
+            // then we can just set the recycler items
             //Since we already have folders (or not) we don't need to complain
             setRecyclerViewItems(false)
         } else if (!visited) {
@@ -132,6 +133,7 @@ class PDFListFragment : Fragment() {
         //But don't download again in the same app instance (prevents re-downloading on navigation)
         //TODO: Better invalidation logic (user setting), handle new and old PDFs being different (in PDFService)
         if (!(args.listFiles and cm.isActiveNetworkMetered) and !visited) {
+            Log.d("PDF Service", "Starting")
             PDFService.startService(
                 args.folder,
                 url,
