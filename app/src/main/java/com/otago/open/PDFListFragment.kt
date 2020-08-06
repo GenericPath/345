@@ -167,7 +167,7 @@ class PDFListFragment : Fragment() {
     @Suppress("SameParameterValue") //TODO: Check this - needed to make the warning go away but the warning doesn't seem to be true?
     private fun setRecyclerViewItems(notify: Boolean) {
         //Generate the file list
-        setRecyclerViewItems(notify, generateFolderList())
+        setRecyclerViewItems(notify, generateFolderList(args.folder))
     }
 
     /**
@@ -199,9 +199,9 @@ class PDFListFragment : Fragment() {
      *
      * @return The list of [PDFItem]s in the specified directory
      */
-    private fun generateFolderList(): List<PDFItem> {
+    fun generateFolderList(folder: String): List<PDFItem> {
         //Get the "current folder"
-        val currentFolder = File(args.folder)
+        val currentFolder = File(folder)
         val result = ArrayList<FetchResult>()
         val files = currentFolder.listFiles()
 
@@ -385,7 +385,7 @@ class PDFListFragment : Fragment() {
             return when {
                 //If we are relative to a folder, just concatenate the folder and sub-directory
                 onPageUrl.endsWith("/") -> {
-                    "$onPageUrl/$trimHref"
+                    "$onPageUrl$trimHref" //onPageUrl already has a trailing /
                 }
                 //If the href is absolute then just concatenate the COSC website and the href
                 trimHref.startsWith('/') -> {
@@ -410,7 +410,7 @@ class PDFListFragment : Fragment() {
          *
          * @return The list of [FetchResult]s for each PDF (or folder if [doFolders] is true) on the page
          */
-        private fun fetchLinks(parentFolder: String, url: String, doFolders: Boolean): ArrayList<FetchResult> {
+        fun fetchLinks(parentFolder: String, url: String, doFolders: Boolean): ArrayList<FetchResult> {
             val links = ArrayList<FetchResult>()
             Log.d("Jsoup URL", url)
 

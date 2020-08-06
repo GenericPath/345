@@ -55,10 +55,9 @@ class InstrumentedTest {
 
             //Check that what we put in is what we get out
             assertEquals(fetch, it)
-
-            //Clean up pretend files
-            File("~", it.itemFile + ".meta").delete()
-            File(it.itemFile).delete()
         }
+
+        val folderListing = PDFListFragment().generateFolderList(testFileDir.absolutePath)
+        assertEquals(folderListing, PDFListFragment.PDFService.generatePdfItems(fetches))
     }
 }
