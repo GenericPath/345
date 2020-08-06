@@ -24,8 +24,8 @@ All submitted code runs on the CI pipelines defined in ```.github/workflows/```
 
 ```test.yml```
 
--  Tests code quality (lintDebug)
--  Run unit tests (testDebug)
+-   Tests code quality (lintDebug)
+-   Run unit tests (testDebug)
  
 ```build.yml```
 
@@ -47,14 +47,13 @@ Features fetching, storing and viewing lecture slides for Computer Science paper
 **To build application locally:**
 
 -   Clone the repository
-
 -   *Option 1* - Android Studio:
-  -   Open with Android Studio, wait for initial gradle setup
-  -   Build (Ctrl+F9) / Emulate (Shift+F10)
+-     Open with Android Studio, wait for initial gradle setup
+-     Build (Ctrl+F9) / Emulate (Shift+F10)
 
 -   *Option 2* - *NIX:
-  -   ```./gradlew assembleDebug ```
-  -   install ```/app/build/outputs/apk/debug/app-debug.apk``` onto device
+-     ```./gradlew assembleDebug ```
+-     install ```/app/build/outputs/apk/debug/app-debug.apk``` onto device
 
 **To build documentation locally:**
 
