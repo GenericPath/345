@@ -6,13 +6,15 @@ import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
 import org.jsoup.UnsupportedMimeTypeException
 import java.io.*
-import java.lang.Exception
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
+/**
+ * Common operations for PDF files / course folders
+ */
 object PDFOperations {
     /**
      * Gets the resource icon from a [FileNavigatorType]
@@ -134,7 +136,7 @@ object PDFOperations {
      *
      * @return A [FetchResult] for [assFile]
      */
-    fun loadMetaFile(assFile: String): FetchResult {
+    fun loadMetaFile(assFile: String): FetchResult? {
         //Get the file name
         val metaName = "$assFile.meta"
 
@@ -156,14 +158,18 @@ object PDFOperations {
             File(assFile).isDirectory -> {
                 FileNavigatorType.FOLDER
             }
-            else -> { //Complain
-                //TODO: ????
-                throw Exception("")
+            else -> {
+                null
             }
         }
 
         //Return our "pretend" fetch result
-        return FetchResult(assFile, url, coscName, navType)
+        return if (navType == null) {
+            null
+        }
+        else {
+            FetchResult(assFile, url, coscName, navType)
+        }
     }
 
     /**
@@ -320,47 +326,45 @@ object PDFOperations {
     }
 
     /**
-     * Download each PDF from list of url endings retrieved from [fetchLinks].
+     * Downloads a PDF using the [downloadFile] logic.
      *
-     * @param links [ArrayList] of the [FetchResult]s from something like [fetchLinks]
+     * @param pdfFile The [FetchResult] corresponding to the PDF to download
      */
-    fun downloadPDF(links: ArrayList<FetchResult>) {
-        links.forEach{
-            //Common stuff good to know
-            val parentDir = it.itemFile.substringBeforeLast('/', "")
-            val fileName = it.itemFile.substringAfterLast('/', "")
+    fun downloadPDF(pdfFile: FetchResult) {
+        //Common stuff good to know
+        val parentDir = pdfFile.itemFile.substringBeforeLast('/', "")
+        val fileName = pdfFile.itemFile.substringAfterLast('/', "")
 
-            //If it's a folder then we just need to create it
-            if (it.type == FileNavigatorType.FOLDER || it.type == FileNavigatorType.MARKS) {
-                Log.d("Creating Folder ", it.itemFile)
-                try {
-                    File(it.itemFile).mkdirs()
+        //If it's a folder then we just need to create it
+        if (pdfFile.type == FileNavigatorType.FOLDER || pdfFile.type == FileNavigatorType.MARKS) {
+            Log.d("Creating Folder ", pdfFile.itemFile)
+            try {
+                File(pdfFile.itemFile).mkdirs()
 
-                    createMetaFile(parentDir, fileName, it)
+                createMetaFile(parentDir, fileName, pdfFile)
 
-                } catch (e: FileNotFoundException) {
-                    //TODO: Something here
-                    e.printStackTrace()
-                    return@forEach
-                } catch (e: IOException) {
-                    //TODO: Something here
-                    e.printStackTrace()
-                    return@forEach
-                }
-                return@forEach
+            } catch (e: FileNotFoundException) {
+                //TODO: Something here
+                e.printStackTrace()
+                return
+            } catch (e: IOException) {
+                //TODO: Something here
+                e.printStackTrace()
+                return
             }
+            return
+        }
 
-            //Sanitise input - in case of a blank href
-            if (it.itemUrl.isBlank()) {
-                return@forEach
-            }
+        //Sanitise input - in case of a blank href
+        if (pdfFile.itemUrl.isBlank()) {
+            return
+        }
 
-            val outFile = downloadFile(it.itemUrl, parentDir, fileName)
+        val outFile = downloadFile(pdfFile.itemUrl, parentDir, fileName)
 
-            if (outFile != null) {
-                Log.d("Creating Download Meta-File", outFile)
-                createMetaFile(outFile, it)
-            }
+        if (outFile != null) {
+            Log.d("Creating Download Meta-File", outFile)
+            createMetaFile(outFile, pdfFile)
         }
     }
 }

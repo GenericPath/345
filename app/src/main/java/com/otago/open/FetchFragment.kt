@@ -31,14 +31,12 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_fetch.*
+import kotlinx.android.synthetic.main.fragment_fetch.recycler_view
 import kotlinx.coroutines.*
 import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
 import org.jsoup.UnsupportedMimeTypeException
 import java.io.*
-import java.lang.Exception
-import java.lang.IllegalStateException
-import java.lang.NullPointerException
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.util.*
@@ -81,29 +79,28 @@ class FetchFragment : Fragment() {
      * @param savedInstanceState The (saved) state of the application
      */
     private fun restoreState(savedInstanceState: Bundle) {
-        try {
-            Log.d("Fetch Fragment Saving", "Restoring bundle")
-            val code = savedInstanceState.getStringArray("courseCodes")
-            val name = savedInstanceState.getStringArray("courseNames")
-            val url = savedInstanceState.getStringArray("courseUrls")
-            val resId = savedInstanceState.getIntArray("courseResIds")
+        Log.d("Fetch Fragment Saving", "Restoring bundle")
+        val code = savedInstanceState.getStringArray("courseCodes")
+        val name = savedInstanceState.getStringArray("courseNames")
+        val url = savedInstanceState.getStringArray("courseUrls")
+        val resId = savedInstanceState.getIntArray("courseResIds")
 
-            val incomingItems = ArrayList<CourseItem>()
-
-            code!!.forEachIndexed { i, it ->
-                incomingItems.add(CourseItem(resId!![i], name!![i], url!![i], it!!))
-            }
-
-            //Load the recycler
-            setRecyclerItems(incomingItems.toList())
-        } catch (e: Exception) {
+        if (code == null || name == null || url == null || resId == null) {
             //If something fails then complain then just run it again
             Log.d("Fetch Fragment Saving", "Bundle restore failed")
             Toast.makeText(context, "Failed to load previous state - fetching again", Toast.LENGTH_SHORT).show()
-            e.printStackTrace()
             http_bar.visibility = View.VISIBLE
             startCourseService(true)
+            return
         }
+
+        val incomingItems = ArrayList<CourseItem>()
+        code.forEachIndexed { i, it ->
+            incomingItems.add(CourseItem(resId[i], name[i], url[i], it))
+        }
+
+        //Load the recycler
+        setRecyclerItems(incomingItems.toList())
     }
 
     /**
@@ -168,6 +165,30 @@ class FetchFragment : Fragment() {
         }
     }
 
+    private fun getCourseItem(it: File) : CourseItem? {
+        try {
+            //We don't need to list the meta files
+            if (it.absolutePath.endsWith(".meta", true)) {
+                return null
+            }
+
+            //Load the meta file for the current file / folder
+            val meta = PDFOperations.loadMetaFile(it.absolutePath) ?: return null
+
+            //Add the course to the course items
+            return CourseItem(
+                PDFOperations.getResourceItem(meta.type),
+                meta.coscName,
+                meta.itemUrl,
+                meta.coscName.toLowerCase(Locale.ROOT)
+            )
+        } catch (e: IOException) {
+            return null
+        } catch (e: FileNotFoundException) {
+            return null
+        }
+    }
+
     /**
      * Handles the creation of this activity, and starts the coroutine service to list the courses
      *
@@ -191,27 +212,12 @@ class FetchFragment : Fragment() {
                     val dataFolder = File(ContextWrapper(context).filesDir.absolutePath)
                     val result = ArrayList<CourseItem>()
 
-                    dataFolder.listFiles()?.forEach {
-                        try {
-                            //We don't need to list the meta files
-                            if (it.absolutePath.endsWith(".meta", true)) {
-                                return@forEach
-                            }
+                    dataFolder.listFiles()?.forEach {it ->
+                        val item = getCourseItem(it)
 
-                            //Load the meta file for the current file / folder
-                            val meta = PDFOperations.loadMetaFile(it.absolutePath)
-
-                            //Add the course to the course items
-                            result += CourseItem(
-                                PDFOperations.getResourceItem(meta.type),
-                                meta.coscName,
-                                meta.itemUrl,
-                                meta.coscName.toLowerCase(Locale.ROOT)
-                            )
-                        } catch (e: IOException) {
-                            //TODO: Something
-                        } catch (e: FileNotFoundException) {
-                            //TODO: Something
+                        //TODO: Handle null (something)
+                        if (item != null) {
+                            result.add(item)
                         }
                     }
 
@@ -237,6 +243,11 @@ class FetchFragment : Fragment() {
      * @param links The links to add
      */
     fun setRecyclerItems(links: List<CourseItem>) {
+        //If we are called from a coroutine which is running with a destroyed fragment
+        //e.g. from after navigation we don't want to do anything here
+        if (recycler_view == null) {
+            return
+        }
         adapterItems = links
         //Create our recycler view adapter and the lambda to handle selection
         recycler_view.adapter = CourseItemRecyclerViewAdapter(links) { link -> listItems(link) }
@@ -331,18 +342,13 @@ class FetchFragment : Fragment() {
                     e.printStackTrace()
                 }
 
-                try {
-                    withContext(Dispatchers.Main) {
-                        //Update the UI on completion of paper fetch
+                withContext(Dispatchers.Main) {
+                    //Update the UI on completion of paper fetch
+                    if (inFragment.http_bar != null) {
                         inFragment.http_bar.visibility = View.GONE
-                        inFragment.setRecyclerItems(links.toList())
                     }
-                } catch (e: IllegalStateException) {
-                    //Just stop if the fragment is gone
-                    return@launch
-                } catch (e: NullPointerException) {
-                    //Just stop if the fragment is gone
-                    return@launch
+                    //Null check done in setRecyclerItems
+                    inFragment.setRecyclerItems(links.toList())
                 }
             }
         }

@@ -66,16 +66,13 @@ class PDFViewFragment : Fragment() {
      */
     private fun showPdf(file: File, pdfView: PDFView) {
         //Displays a PDF
+        //TODO: Figure out why load() never throws an exception on the current thread
         try {
             Log.d("View PDF", file.absolutePath)
             pdfView.fromFile(file).load()
         } catch (e : IOException) {
             //If it fails send a toast and go back
             Toast.makeText(context, "Couldn't load PDF", Toast.LENGTH_SHORT).show()
-            activity?.finish()
-        } catch (e: Exception) {
-            //If it fails send a toast and go back
-            Toast.makeText(context, "PDF corrupt?", Toast.LENGTH_SHORT).show()
             activity?.finish()
         }
     }
@@ -107,7 +104,6 @@ class PDFViewFragment : Fragment() {
         //Parse the filename into a File
         val file = File(args.pdfFileName)
 
-        //TODO: Figure out why load() never throws an exception on the current thread
         when {
             //If the file exists (i.e. has been downloaded) we will view it here
             //We know that this will work since the files that haven't been fully downloaded yet end in .download

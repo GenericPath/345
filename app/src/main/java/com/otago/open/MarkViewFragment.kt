@@ -39,6 +39,20 @@ class MarkViewFragment : Fragment() {
     private val args : MarkViewFragmentArgs by navArgs()
 
     /**
+     * JavaScript function to tidy up the marks page
+     */
+    private val javaScript =
+        "function() {" +
+            "document.getElementsByTagName(\"body\")[0].innerHTML = document.getElementById('coursepagefullwidth').innerHTML;" +
+            "document.querySelectorAll('link[rel=\"stylesheet\"]').forEach(el => el.parentNode.removeChild(el));" +
+            "var footer = document.getElementsByClassName(\"footer\");" +
+            "if (footer) {" +
+                "footer[0].innerHTML = \"\"" +
+            "}" +
+            "document.getElementsByTagName(\"body\")[0].style=\"margin: 5px; width: 100vw; box-sizing: border-box;\";" +
+        "}"
+
+    /**
      * Entry point of [MarkViewFragment]
      *
      * @param inflater The inflater to parse the XML
@@ -67,22 +81,14 @@ class MarkViewFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val markView = view.findViewById<WebView>(R.id.markView)
 
-        val width = "100vw"
-
         markView.settings.javaScriptEnabled = true
 
         markView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
-                //super.onPageFinished(view, url)
+                super.onPageFinished(view, url)
 
                 //No questions please
-                //Okay, fine
-                //It first trims the header and footer,
-                //Then replaces the content with only the main portion
-                //Then constrains the width of certain divs and any form
-                //Then trims the footer so that poor Sandy from COMP160 isn't incorrectly associated
-                //With this app
-                view.loadUrl("javascript:(function(){if (document.getElementById('coursepage_topbar')) document.getElementById('coursepage_topbar').outerHTML=\"\";if (document.getElementById('coursepage_footer')) document.getElementById('coursepage_footer').outerHTML=\"\";if (document.getElementById('centralbar')) document.getElementById('centralbar').innerHTML = document.getElementById('coursepagefullwidth').innerHTML; if (document.getElementById('outline-container-sec-1')) document.getElementById('centralbar').style = \"width: $width\"; if (document.getElementById('outline-container-sec-1')) document.getElementById('outline-container-sec-1').style = \"width: $width\"; if (document.getElementsByTagName('form')) document.getElementsByTagName('form')[0].style=\"width:$width\"; if (document.getElementsByClassName('footer')) document.getElementsByClassName('footer')[0].outerHTML=\"\";})()")
+                view.loadUrl("javascript:($javaScript)()")
             }
         }
 

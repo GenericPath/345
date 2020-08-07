@@ -101,7 +101,7 @@ class PDFListFragment : Fragment() {
             //If we are just listing files (no HTTP) or we have already visited this page
             // then we can just set the recycler items
             //Since we already have folders (or not) we don't need to complain
-            setRecyclerViewItems(false)
+            setRecyclerItems(false)
         } else if (pdfService == null) {
             //Block UI while the available files are fetched (but only if none exist already)
             http_bar.visibility = View.VISIBLE
@@ -151,9 +151,9 @@ class PDFListFragment : Fragment() {
      * @param cacheMessage - Whether to send a toast about having no files present in the cache or about no files at all
      */
     @Suppress("SameParameterValue") //TODO: Check this - needed to make the warning go away but the warning doesn't seem to be true?
-    private fun setRecyclerViewItems(cacheMessage: Boolean) {
+    private fun setRecyclerItems(cacheMessage: Boolean) {
         //Generate the file list
-        setRecyclerViewItems(cacheMessage, generateFolderList(args.folder))
+        setRecyclerItems(cacheMessage, generateFolderList(args.folder))
     }
 
     /**
@@ -162,7 +162,13 @@ class PDFListFragment : Fragment() {
      * @param cacheMessage - Whether to send a toast about having no files present
      * @param list - The [PDFItem]s to add
      */
-    private fun setRecyclerViewItems(cacheMessage: Boolean, list: List<PDFItem>) {
+    private fun setRecyclerItems(cacheMessage: Boolean, list: List<PDFItem>) {
+        //If we are called from a coroutine which is running with a destroyed fragment
+        //e.g. from after navigation we don't want to do anything here
+        if (recycler_view == null) {
+            return
+        }
+
         //Only send the message if we want to
         if (list.isEmpty()) {
             if (cacheMessage)
@@ -185,6 +191,20 @@ class PDFListFragment : Fragment() {
         recycler_view.layoutManager?.onRestoreInstanceState(recyclerViewState)
     }
 
+    private fun getPdfItemFetchResult(it: File): FetchResult? {
+        if (it.absolutePath.endsWith(".meta")) {
+            return null
+        }
+        try {
+            return PDFOperations.loadMetaFile(it.absolutePath)
+        } catch (e: IOException) {
+            return null
+        } catch (e: FileNotFoundException) {
+            return null
+        }
+
+    }
+
     /**
      * Creates list of [PDFItem] items from what is present in the current directory (paper folder / sub name)
      *
@@ -203,17 +223,11 @@ class PDFListFragment : Fragment() {
 
         //Only select PDFs and directories
         files?.forEach {
-            if (it.absolutePath.endsWith(".meta")) {
-                return@forEach
-            }
-            try {
-                result += PDFOperations.loadMetaFile(it.absolutePath)
-            } catch (e: IOException) {
-                //TODO: Something
-                return@forEach
-            } catch (e: FileNotFoundException) {
-                //TODO: Something
-                return@forEach
+            val item = getPdfItemFetchResult(it)
+
+            //TODO: Handle null (something)
+            if (item != null) {
+                result.add(item)
             }
         }
 
@@ -299,12 +313,14 @@ class PDFListFragment : Fragment() {
                         inFragment.http_bar.visibility = View.GONE
                     }
                     //If we are just listing files don't complain if we don't find any - they will see that already
-                    inFragment.setRecyclerViewItems(!inFragment.args.listFiles, pdfs)
+                    inFragment.setRecyclerItems(!inFragment.args.listFiles, pdfs)
                 }
 
                 //If we do have links, download them
                 if (fetchedLinks.size > 0) {
-                    PDFOperations.downloadPDF(fetchedLinks)
+                    fetchedLinks.forEach {
+                        PDFOperations.downloadPDF(it)
+                    }
                 }
             }
         }
