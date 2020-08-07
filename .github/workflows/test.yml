@@ -22,9 +22,6 @@ jobs:
       - name: Run Android Linter
         run: ./gradlew lintDebug
 
-      - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest
-
       - name: Run Instrumented Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
