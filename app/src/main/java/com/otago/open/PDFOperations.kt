@@ -5,6 +5,7 @@ import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.UnsupportedMimeTypeException
+import org.jsoup.nodes.Document
 import java.io.*
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
@@ -244,16 +245,16 @@ object PDFOperations {
     }
 
     /**
-     * Helper function for [fetchLinks].
+     * Helper function for [fetchPdf].
      * Processes a link in a given COSC website "coursepagefullwidth" div
      *
+     * @param parentFolder The folder where the item pointed to by the link would be saved
      * @param url The url where the link is found
-     * @param parentFolder The folder when the item pointed to by the link would be saved
      * @param it The html link element (a)
      *
      * @return A [FetchResult] corresponding to this link, if this link is relevant, otherwise null
      */
-    private fun fetchProcessHref(url: String, parentFolder: String, it: Element): FetchResult? {
+    private fun fetchProcessHref(parentFolder: String, url: String, it: Element): FetchResult? {
         val href = it.attr("href")
         val hrefName = href.substringAfterLast('/')
         Log.d("Found href (PDF)", href)
@@ -274,16 +275,16 @@ object PDFOperations {
     }
 
     /**
-     * Helper function for [fetchLinks].
+     * Helper function for [fetchFolder].
      * Processes a link in a given COSC website "coursepagenavmenu" div
      *
+     * @param parentFolder The folder where the item pointed to by the link would be saved
      * @param url The url where the link is found
-     * @param parentFolder The folder when the item pointed to by the link would be saved
      * @param it The html link element (a)
      *
      * @return A [FetchResult] corresponding to this link, if this link is relevant, otherwise null
      */
-    private fun fetchProcessFolder(url: String, parentFolder: String, it: Element): FetchResult? {
+    private fun fetchProcessFolder(parentFolder: String, url: String, it: Element): FetchResult? {
         val href = it.attr("href")
         val hrefName = href.substringAfterLast('/')
         Log.d("Found href (folder)", "$url;$href")
@@ -310,6 +311,54 @@ object PDFOperations {
     }
 
     /**
+     * Helper function for [fetchLinks]
+     * Finds PDFs in a COSC web page
+     *
+     * @param document The Jsoup document containing the parsed DOM
+     * @param parentFolder The folder where the PDF pointed to by the link would be saved
+     * @param url The url where the PDF is found
+     *
+     * @return An [ArrayList] of [FetchResult]s referring to PDF on the page at [url]
+     */
+    private fun fetchPdf(document: Document, parentFolder: String, url: String): ArrayList<FetchResult> {
+        val links = ArrayList<FetchResult>()
+
+        document.select("div#coursepagefullwidth a").forEach {
+            val item = fetchProcessHref(parentFolder, url, it)
+
+            if (item != null) {
+                links.add(item)
+            }
+        }
+
+        return links
+    }
+
+    /**
+     * Helper function for [fetchLinks]
+     * Finds subfolders (lectures, tutorials, etc)  in a COSC web page
+     *
+     * @param document The Jsoup document containing the parsed DOM
+     * @param parentFolder The folder in which the folder pointed to by the link would be created
+     * @param url The url where the link is found
+     *
+     * @return An [ArrayList] of [FetchResult]s referring to folder (link) on the page at [url]
+     */
+    private fun fetchFolder(document: Document, parentFolder: String, url: String): ArrayList<FetchResult> {
+        val links = ArrayList<FetchResult>()
+
+        document.select("div#coursepagenavmenu a").forEach {
+            val item = fetchProcessFolder(parentFolder, url, it)
+
+            if (item != null) {
+                links.add(item)
+            }
+        }
+
+        return links
+    }
+
+    /**
      * Retrieve links from a table containing href elements.
      *
      * @see PDFItem for more details on what the [parentFolder], and [url] are part of
@@ -328,23 +377,11 @@ object PDFOperations {
             val document = Jsoup.connect(url).get()
 
             //PDF links
-            document.select("div#coursepagefullwidth a").forEach {
-                val item = fetchProcessHref(url, parentFolder, it)
-
-                if (item != null) {
-                   links.add(item)
-                }
-            }
+            links.addAll(fetchPdf(document, parentFolder, url))
 
             if (doFolders) {
                 //Nav links
-                document.select("div#coursepagenavmenu a").forEach {
-                    val item = fetchProcessFolder(url, parentFolder, it)
-
-                    if (item != null) {
-                        links.add(item)
-                    }
-                }
+                links.addAll(fetchFolder(document, parentFolder, url))
             }
 
         } catch (e: MalformedURLException) {

@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Clone Repo
@@ -22,8 +22,12 @@ jobs:
       - name: Run Android Linter
         run: ./gradlew lintDebug
 
-      - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest
+      - name: Run Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew connectedCheck
+
       - name: Generate Code Coverage reports
         run: |
           ./gradlew jacocoTestReportDebug
