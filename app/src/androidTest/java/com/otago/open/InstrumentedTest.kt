@@ -29,9 +29,9 @@ class InstrumentedTest {
 
         //Sample fetches
         val fetches = listOf (
-            PDFListFragment.FetchResult(testFileDir.absolutePath + "/marks.php", "cs.otago.ac.nz/cosc242/marks.php", "Marks", FileNavigatorType.MARKS),
-            PDFListFragment.FetchResult(testFileDir.absolutePath + "/lectures.php", "cs.otago.ac.nz/cosc242/lectures.php", "Lectures", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult(testFileDir.absolutePath + "/L01.pdf", "cs.otago.ac.nz/cosc242/pdf/L01.pdf", "Test File", FileNavigatorType.PDF)
+            FetchResult(testFileDir.absolutePath + "/marks.php", "cs.otago.ac.nz/cosc242/marks.php", "Marks", FileNavigatorType.MARKS),
+            FetchResult(testFileDir.absolutePath + "/lectures.php", "cs.otago.ac.nz/cosc242/lectures.php", "Lectures", FileNavigatorType.FOLDER),
+            FetchResult(testFileDir.absolutePath + "/L01.pdf", "cs.otago.ac.nz/cosc242/pdf/L01.pdf", "Test File", FileNavigatorType.PDF)
         )
 
         fetches.forEach {

@@ -73,6 +73,34 @@ class FetchFragment : Fragment() {
     }
 
     /**
+     * Sets the fragment up normally
+     */
+    private fun newState() {
+        //If we are just listing files then we just load from the cache
+        if (args.listFiles) {
+            //The folder all the courses are stored in
+            val dataFolder = File(ContextWrapper(context).filesDir.absolutePath)
+            val result = ArrayList<CourseItem>()
+
+            dataFolder.listFiles()?.forEach {it ->
+                val item = getCourseItem(it)
+
+                //TODO: Handle null (something)
+                if (item != null) {
+                    result.add(item)
+                }
+            }
+
+            //Set the recycler items
+            setRecyclerItems(result)
+        } else {
+            //If we are checking the UoO website then show the progress bar and start the service
+            http_bar.visibility = View.VISIBLE
+            startCourseService(false)
+        }
+    }
+
+    /**
      * Loads the saved course instances so that we don't need to send any requests if the user navigates backward
      * Also called when the screen is rotated
      *
@@ -165,6 +193,13 @@ class FetchFragment : Fragment() {
         }
     }
 
+    /**
+     * Gets a [CourseItem] from a given file, by loading its associated meta file
+     *
+     * @param it The file to generate a [CourseItem] for
+     *
+     * @return A [CourseItem] from the file and meta file, if successful, otherwise null
+     */
     private fun getCourseItem(it: File) : CourseItem? {
         try {
             //We don't need to list the meta files
@@ -206,28 +241,7 @@ class FetchFragment : Fragment() {
             }
             savedInstanceState == null -> {
                 Log.d("Fetch Activity Created", "Fetching")
-                //If we are just listing files then we just load from the cache
-                if (args.listFiles) {
-                    //The folder all the courses are stored in
-                    val dataFolder = File(ContextWrapper(context).filesDir.absolutePath)
-                    val result = ArrayList<CourseItem>()
-
-                    dataFolder.listFiles()?.forEach {it ->
-                        val item = getCourseItem(it)
-
-                        //TODO: Handle null (something)
-                        if (item != null) {
-                            result.add(item)
-                        }
-                    }
-
-                    //Set the recycler items
-                    setRecyclerItems(result)
-                } else {
-                    //If we are checking the UoO website then show the progress bar and start the service
-                    http_bar.visibility = View.VISIBLE
-                    startCourseService(false)
-                }
+                newState()
             }
             else -> {
                 //Restore state
@@ -267,7 +281,7 @@ class FetchFragment : Fragment() {
 
         //Create the course meta file
         //Create a "fake" fetch result which corresponds to the course folder, the index.php url, the course code (uppercase when presented), and make sure it's a folder
-        val metaFileFetchResult = PDFListFragment.FetchResult(courseFolder, item.courseUrl, item.courseCode.toUpperCase(Locale.ROOT), FileNavigatorType.FOLDER)
+        val metaFileFetchResult = FetchResult(courseFolder, item.courseUrl, item.courseCode.toUpperCase(Locale.ROOT), FileNavigatorType.FOLDER)
         //Save the meta file using the fetch result
         PDFOperations.createMetaFile(ContextWrapper(context).filesDir.absolutePath, item.courseCode, metaFileFetchResult)
 

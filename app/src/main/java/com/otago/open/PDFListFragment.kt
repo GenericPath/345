@@ -42,16 +42,6 @@ import kotlin.collections.ArrayList
  */
 class PDFListFragment : Fragment() {
     /**
-     * Data class for fetched folders / PDFs from the COSC website
-     *
-     * @param itemFile When this particular file (indicated vis [itemUrl] should be saved
-     * @param itemUrl The URL of the item (folder / PDF) to ferch
-     * @param coscName The name of the item on the COSC website
-     * @param type The type of the item (folder or PDF etc)
-     */
-    data class FetchResult(val itemFile: String, val itemUrl: String, val coscName: String, val type: FileNavigatorType)
-
-    /**
      * Args to pass in directory navigated to
      */
     private val args : PDFListFragmentArgs by navArgs()
@@ -191,11 +181,18 @@ class PDFListFragment : Fragment() {
         recycler_view.layoutManager?.onRestoreInstanceState(recyclerViewState)
     }
 
+    /**
+     * Gets a [FetchResult] from a given file, by loading its associated meta file
+     *
+     * @param it The file to generate a [FetchResult] for
+     *
+     * @return A [FetchResult] from the file and meta file, if successful, otherwise null
+     */
     private fun getPdfItemFetchResult(it: File): FetchResult? {
-        if (it.absolutePath.endsWith(".meta")) {
-            return null
-        }
         try {
+            if (it.absolutePath.endsWith(".meta")) {
+                return null
+            }
             return PDFOperations.loadMetaFile(it.absolutePath)
         } catch (e: IOException) {
             return null

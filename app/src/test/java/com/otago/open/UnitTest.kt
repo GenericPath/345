@@ -33,12 +33,12 @@ class UnitTest {
     fun checkUrlFetchFolder() {
         val fetchResult = PDFOperations.fetchLinks("testFolderUrlFetch", "https://cs.otago.ac.nz/cosc242/index.php", true)
         val fetchList = listOf(
-            PDFListFragment.FetchResult("testFolderUrlFetch/assessment.php", "https://cs.otago.ac.nz/cosc242/assessment.php", "Assessment", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult("testFolderUrlFetch/lectures.php", "https://cs.otago.ac.nz/cosc242/lectures.php", "Lectures", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult("testFolderUrlFetch/marks.php", "https://cs.otago.ac.nz/cosc242/marks.php", "Marks", FileNavigatorType.MARKS),
-            PDFListFragment.FetchResult("testFolderUrlFetch/resources.php", "https://cs.otago.ac.nz/cosc242/resources.php", "Resources", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult("testFolderUrlFetch/staff.php", "https://cs.otago.ac.nz/cosc242/staff.php", "Staff", FileNavigatorType.FOLDER),
-            PDFListFragment.FetchResult("testFolderUrlFetch/tutorials.php", "https://cs.otago.ac.nz/cosc242/tutorials.php", "Tutorials", FileNavigatorType.FOLDER)
+            FetchResult("testFolderUrlFetch/assessment.php", "https://cs.otago.ac.nz/cosc242/assessment.php", "Assessment", FileNavigatorType.FOLDER),
+            FetchResult("testFolderUrlFetch/lectures.php", "https://cs.otago.ac.nz/cosc242/lectures.php", "Lectures", FileNavigatorType.FOLDER),
+            FetchResult("testFolderUrlFetch/marks.php", "https://cs.otago.ac.nz/cosc242/marks.php", "Marks", FileNavigatorType.MARKS),
+            FetchResult("testFolderUrlFetch/resources.php", "https://cs.otago.ac.nz/cosc242/resources.php", "Resources", FileNavigatorType.FOLDER),
+            FetchResult("testFolderUrlFetch/staff.php", "https://cs.otago.ac.nz/cosc242/staff.php", "Staff", FileNavigatorType.FOLDER),
+            FetchResult("testFolderUrlFetch/tutorials.php", "https://cs.otago.ac.nz/cosc242/tutorials.php", "Tutorials", FileNavigatorType.FOLDER)
         )
 
         val pdfList = listOf(
@@ -62,8 +62,8 @@ class UnitTest {
         val pdfResult = PDFOperations.generatePdfItems(listOf (fetchResult[0], fetchResult[1])) //Don't test stuff that isn't checked
 
         val fetchList = listOf(
-            PDFListFragment.FetchResult("testFolderPdfFetch/L1.pdf", "https://cs.otago.ac.nz/cosc244/pdf/L1.pdf", "Introduction to Data Communications", FileNavigatorType.PDF),
-            PDFListFragment.FetchResult("testFolderPdfFetch/L2.pdf", "https://cs.otago.ac.nz/cosc244/pdf/L2.pdf", "Signals and Encoding", FileNavigatorType.PDF)
+            FetchResult("testFolderPdfFetch/L1.pdf", "https://cs.otago.ac.nz/cosc244/pdf/L1.pdf", "Introduction to Data Communications", FileNavigatorType.PDF),
+            FetchResult("testFolderPdfFetch/L2.pdf", "https://cs.otago.ac.nz/cosc244/pdf/L2.pdf", "Signals and Encoding", FileNavigatorType.PDF)
         )
 
         val pdfList = listOf(

@@ -1,9 +1,9 @@
 package com.otago.open
 
 import android.util.Log
-import com.otago.open.PDFListFragment.FetchResult
 import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import org.jsoup.UnsupportedMimeTypeException
 import java.io.*
 import java.net.MalformedURLException
@@ -244,6 +244,72 @@ object PDFOperations {
     }
 
     /**
+     * Helper function for [fetchLinks].
+     * Processes a link in a given COSC website "coursepagefullwidth" div
+     *
+     * @param url The url where the link is found
+     * @param parentFolder The folder when the item pointed to by the link would be saved
+     * @param it The html link element (a)
+     *
+     * @return A [FetchResult] corresponding to this link, if this link is relevant, otherwise null
+     */
+    private fun fetchProcessHref(url: String, parentFolder: String, it: Element): FetchResult? {
+        val href = it.attr("href")
+        val hrefName = href.substringAfterLast('/')
+        Log.d("Found href (PDF)", href)
+        if (href.endsWith(".pdf")) {
+            Log.d("Fetched Link", href)
+            val newUrl = determinePath(url, href)
+
+            Log.d("Found PDF (URL)", newUrl)
+            return FetchResult(
+                "$parentFolder/$hrefName",
+                newUrl,
+                it.text(),
+                FileNavigatorType.PDF
+            )
+        }
+
+        return null
+    }
+
+    /**
+     * Helper function for [fetchLinks].
+     * Processes a link in a given COSC website "coursepagenavmenu" div
+     *
+     * @param url The url where the link is found
+     * @param parentFolder The folder when the item pointed to by the link would be saved
+     * @param it The html link element (a)
+     *
+     * @return A [FetchResult] corresponding to this link, if this link is relevant, otherwise null
+     */
+    private fun fetchProcessFolder(url: String, parentFolder: String, it: Element): FetchResult? {
+        val href = it.attr("href")
+        val hrefName = href.substringAfterLast('/')
+        Log.d("Found href (folder)", "$url;$href")
+        val newUrl = determinePath(url, href)
+
+        //Don't fetch the home page (we're already there)
+        //Make sure we are still on the COSC website (check for php at the end)
+        if (newUrl.endsWith(".php") && !newUrl.endsWith("index.php")) {
+            val name = it.text()
+
+            //If it's a marks page adjust the navigator type accordingly
+            val navType = if (newUrl.endsWith("marks.php")) {
+                FileNavigatorType.MARKS
+            } else {
+                FileNavigatorType.FOLDER
+            }
+
+            Log.d("Detected Name", name)
+            Log.d("Found Folder (URL)", newUrl)
+            return FetchResult("$parentFolder/$hrefName", newUrl, name, navType)
+        }
+
+        return null
+    }
+
+    /**
      * Retrieve links from a table containing href elements.
      *
      * @see PDFItem for more details on what the [parentFolder], and [url] are part of
@@ -262,45 +328,21 @@ object PDFOperations {
             val document = Jsoup.connect(url).get()
 
             //PDF links
-            document.select("a").forEach {
-                val href = it.attr("href")
-                val hrefName = href.substringAfterLast('/')
-                Log.d("Found href (PDF)", href)
-                if (href.endsWith(".pdf")) {
-                    Log.d("Fetched Link", href)
-                    val newUrl = determinePath(url, href)
-                    links += FetchResult(
-                        "$parentFolder/$hrefName",
-                        newUrl,
-                        it.text(),
-                        FileNavigatorType.PDF
-                    )
-                    Log.d("Found PDF (URL)", newUrl)
+            document.select("div#coursepagefullwidth a").forEach {
+                val item = fetchProcessHref(url, parentFolder, it)
+
+                if (item != null) {
+                   links.add(item)
                 }
             }
 
             if (doFolders) {
                 //Nav links
                 document.select("div#coursepagenavmenu a").forEach {
-                    val href = it.attr("href")
-                    val hrefName = href.substringAfterLast('/')
-                    Log.d("Found href (folder)", "$url;$href")
-                    val newUrl = determinePath(url, href)
+                    val item = fetchProcessFolder(url, parentFolder, it)
 
-                    //Don't fetch the home page (we're already there)
-                    //Make sure we are still on the COSC website (check for php at the end)
-                    if (newUrl.endsWith(".php") && !newUrl.endsWith("index.php")) {
-                        val name = it.text()
-
-                        //If it's a marks page adjust the navigator type accordingly
-                        val navType = if (newUrl.endsWith("marks.php")) {
-                            FileNavigatorType.MARKS }
-                        else {
-                            FileNavigatorType.FOLDER
-                        }
-                        Log.d("Detected Name", name)
-                        links += FetchResult("$parentFolder/$hrefName", newUrl, name, navType)
-                        Log.d("Found Folder (URL)", newUrl)
+                    if (item != null) {
+                        links.add(item)
                     }
                 }
             }
