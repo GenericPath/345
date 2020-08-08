@@ -22,9 +22,10 @@ import android.content.Context
 import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
+import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItem
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.espresso.web.assertion.WebViewAssertions.webMatches
 import androidx.test.espresso.web.sugar.Web.onWebView
@@ -99,7 +100,7 @@ class InstrumentedTest {
      * Checks BJ's mark for assignment 1 in COSC344
      */
     @Test
-    fun testFirstFragment() {
+    fun testBjCosc344Mark() {
         onView(withId(R.id.textView)).check(matches(isDisplayed())).check(matches(withText(R.string.covid19_notice)))
         onView(withId(R.id.fetch_items)).perform(click())
 
@@ -113,8 +114,7 @@ class InstrumentedTest {
                 onView(withId(R.id.http_bar_fetch)).check(matches(isDisplayed()))
             }
         } catch (e: AssertionFailedError) {
-            onView(withId(R.id.recycler_view_fetch)).perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(
-                14, click()))
+            onView(withId(R.id.recycler_view_fetch)).perform(actionOnItem<RecyclerView.ViewHolder>(hasDescendant(withText("COSC344 Database Theory and Applications")), click()))
 
             try {
                 //I HATE THIS
@@ -123,8 +123,7 @@ class InstrumentedTest {
                     onView(withId(R.id.http_bar_pdf_list)).check(matches(isDisplayed()))
                 }
             } catch (e: AssertionFailedError) {
-                onView(withId(R.id.recycler_view_list)).perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(
-                    3, click()))
+                onView(withId(R.id.recycler_view_list)).perform(actionOnItem<RecyclerView.ViewHolder>(hasDescendant(withText("Marks")), click()))
 
                 try {
                     //I HATE THIS
@@ -147,6 +146,41 @@ class InstrumentedTest {
                         onWebView().withElement(findElement(Locator.TAG_NAME, "body")).check(webMatches(getText(), containsString("Obtained Mark: 7.5")))
                     }
                 }
+            }
+        }
+
+        pressBack()
+        pressBack()
+        pressBack()
+        pressBack()
+
+        onView(withId(R.id.textView)).check(matches(isDisplayed())).check(matches(withText(R.string.covid19_notice)))
+        onView(withId(R.id.list_items)).perform(click())
+
+        onView(withId(R.id.recycler_view_fetch)).check(matches(isDisplayed()))
+
+        onView(withId(R.id.recycler_view_fetch)).perform(actionOnItem<RecyclerView.ViewHolder>(hasDescendant(withText("COSC344")), click()))
+
+        onView(withId(R.id.recycler_view_list)).perform(actionOnItem<RecyclerView.ViewHolder>(hasDescendant(withText("Marks")), click()))
+        try {
+            //I HATE THIS
+            //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
+            while (true) {
+                onView(withId(R.id.http_bar_mark)).check(matches(isDisplayed()))
+            }
+        } catch (e: AssertionFailedError) {
+            onView(withId(R.id.mark_view)).check(matches(isDisplayed()))
+            onWebView().withElement(findElement(Locator.NAME,"stu_id")).perform(webKeys("2367465"))
+
+            onWebView().withElement(findElement(Locator.NAME, "submit")).perform(webClick())
+            try {
+                //I HATE THIS
+                //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
+                while (true) {
+                    onView(withId(R.id.http_bar_mark)).check(matches(isDisplayed()))
+                }
+            } catch (e: AssertionFailedError) {
+                onWebView().withElement(findElement(Locator.TAG_NAME, "body")).check(webMatches(getText(), containsString("Obtained Mark: 7.5")))
             }
         }
     }
