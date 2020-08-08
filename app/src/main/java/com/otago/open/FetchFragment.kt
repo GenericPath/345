@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_fetch.*
 import kotlinx.coroutines.*
@@ -231,6 +232,8 @@ class FetchFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        activity!!.toolbar.title = getString(R.string.app_name)
+
         //If we have items from a previous state, then just re-add them here
         //Otherwise, try to restore, or if there is nothing to restore then just re-fetch
         when {
@@ -285,7 +288,7 @@ class FetchFragment : Fragment() {
         PDFOperations.createMetaFile(ContextWrapper(context).filesDir.absolutePath, item.courseCode, metaFileFetchResult)
 
         //Move to the fragment for listing files etc. Make sure to preserve the listFiles argument
-        val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(courseFolder, item.courseCode,  args.listFiles)
+        val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(courseFolder, item.courseCode,  args.listFiles, item.courseCode.toUpperCase(Locale.ROOT))
         NavHostFragment.findNavController(nav_host_fragment).navigate(action)
     }
 

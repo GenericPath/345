@@ -29,6 +29,7 @@ import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_mark_view.*
 
 
@@ -85,6 +86,8 @@ class MarkViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        activity!!.toolbar.title = args.navName
+
         mark_view.settings.javaScriptEnabled = true
 
         mark_view.addJavascriptInterface(MarkJS(mark_view, http_bar_mark, activity as MainActivity), "MarkJS")
@@ -112,12 +115,16 @@ class MarkViewFragment : Fragment() {
     }
 
     /**
+     * Android JavaScript interface for setting the visibility of the [WebView] only once most of the COSC website has been deleted
      *
+     * @param markView The [WebView] to hide / show
+     * @param httpBar The [ProgressBar] to show / hide
+     * @param activity The activity (required to call run things on the UI thread)
      */
     class MarkJS(private val markView: WebView, private val httpBar: ProgressBar, private val activity: MainActivity) {
 
         /**
-         *
+         * A JavaScript interface for running when the loadUrl JS has run
          */
         @android.webkit.JavascriptInterface
         fun jsDone() {

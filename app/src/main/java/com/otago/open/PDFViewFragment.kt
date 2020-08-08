@@ -29,6 +29,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import com.github.barteksc.pdfviewer.PDFView
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_pdf_view.*
 import kotlinx.coroutines.*
 import java.io.File
@@ -74,7 +75,10 @@ class PDFViewFragment : Fragment() {
             //If it fails send a toast and go back
             Toast.makeText(context, "Couldn't load PDF", Toast.LENGTH_SHORT).show()
             activity?.finish()
+            return
         }
+
+        pdfView.visibility = View.VISIBLE
     }
 
     /**
@@ -100,6 +104,8 @@ class PDFViewFragment : Fragment() {
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        activity!!.toolbar.title = args.navName
 
         //Parse the filename into a File
         val file = File(args.pdfFileName)
@@ -150,7 +156,6 @@ class PDFViewFragment : Fragment() {
 
                 withContext(Dispatchers.Main) {
                     inFragment.http_bar_pdf_view.visibility = View.INVISIBLE
-                    pdfView.visibility = View.VISIBLE
                     inFragment.showPdf(File(parentFolder, fileName), pdfView)
                 }
             }

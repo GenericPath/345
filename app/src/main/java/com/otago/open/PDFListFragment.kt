@@ -30,6 +30,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_pdf_list_view.*
 import kotlinx.coroutines.*
@@ -71,6 +72,8 @@ class PDFListFragment : Fragment() {
      * @return The layout generated from the XML
      */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        activity!!.toolbar.title = args.navName
+
         return inflater.inflate(R.layout.fragment_pdf_list_view, container, false)
     }
 
@@ -241,13 +244,13 @@ class PDFListFragment : Fragment() {
      * @param item The [PDFItem] to display
      */
     private fun openFile(item: PDFItem) {
-        //pdfService?.cancelService()
+        val nextNav = args.navName + "/" + item.coscName
         when (item.pathType) {
             FileNavigatorType.PDF -> {
                 Log.d("PDF View (URL)", item.itemUrl)
                 Log.d("PDF View (Folder)", item.itemFile)
                 //If is's a PDF then open the PDF in the PDFViewFragment
-                val action = PDFListFragmentDirections.actionPDFListFragmentToPDFViewFragment(item.itemFile, item.itemUrl)
+                val action = PDFListFragmentDirections.actionPDFListFragmentToPDFViewFragment(item.itemFile, item.itemUrl, nextNav)
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
             FileNavigatorType.FOLDER -> {
@@ -255,14 +258,15 @@ class PDFListFragment : Fragment() {
                 val action = PDFListFragmentDirections.actionPDFListFragmentSelf(
                     item.itemFile,
                     args.paperCode,
-                    args.listFiles
+                    args.listFiles,
+                    nextNav
                 )
                 NavHostFragment.findNavController(nav_host_fragment).navigate(action)
             }
             FileNavigatorType.MARKS -> {
                 //For the marks we want to go to the marks fragment
                 Log.d("Mark View POST", item.itemUrl)
-                NavHostFragment.findNavController(nav_host_fragment).navigate(PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(item.itemUrl))
+                NavHostFragment.findNavController(nav_host_fragment).navigate(PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(item.itemUrl, nextNav))
             }
         }
     }

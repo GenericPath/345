@@ -28,6 +28,10 @@
             android:name="url"
             app:argType="string"
             app:nullable="true" />
+
+        <argument
+            android:name="nav_name"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/PDFListFragment"
@@ -46,6 +50,10 @@
         <argument
             android:name="listFiles"
             app:argType="boolean" />
+
+        <argument
+            android:name="nav_name"
+            app:argType="string" />
 
         <action
             android:id="@+id/action_PDFListFragment_to_PDFViewFragment"
@@ -79,6 +87,10 @@
         tools:layout="@layout/fragment_mark_view" >
         <argument
             android:name="post_url"
+            app:argType="string" />
+
+        <argument
+            android:name="nav_name"
             app:argType="string" />
     </fragment>
 </navigation>
