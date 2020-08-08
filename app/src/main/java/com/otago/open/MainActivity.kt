@@ -19,8 +19,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package com.otago.open
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_mark_view.*
 
 /**
  * The main app activity
@@ -39,5 +41,20 @@ class MainActivity : AppCompatActivity() {
 
         //Sets the toolbar layout (incl. the app name).
         setSupportActionBar(toolbar)
+    }
+
+    /**
+     * Handles the back button being pressed
+     * Directs the back event towards the mark web view if it exists
+     */
+    override fun onBackPressed() {
+        if (mark_view != null) {
+            //If the mark view exists and can go back the go back
+            if (mark_view.canGoBack()) {
+                mark_view.goBack()
+                return
+            }
+        }
+        super.onBackPressed()
     }
 }

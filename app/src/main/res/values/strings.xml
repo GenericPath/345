@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">OpenOtago</string>
 
-    <string name="list_test">View Course PDFs</string>
-    <string name="fetch_test">Select Courses</string>
-    <string name="covid19_notice">Some papers are not using the cs.otago.ac.nz website for lecture and tutorial content due to the ongoing COVID-19 related disruption. The 200-level core papers appear to more or less have content</string>
+    <string name="list_message">View Course Items</string>
+    <string name="fetch_message">Download Course Items</string>
+    <string name="covid19_notice">Most papers have returned to normal following the move to COVID-19 Alert Level 1, however a few (like COMP160) are still on Blackboard. Continue to monitor health.govt.nz/covid-19 and covid19.govt.nz</string>
     <string name="listImage">Icon for PDF or Folder</string>
 </resources>

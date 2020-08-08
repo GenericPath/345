@@ -18,8 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package com.otago.open
 
-import android.content.Context
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -78,6 +76,30 @@ class PDFListFragment : Fragment() {
     }
 
     /**
+     * Runs the PDF fetching service, if none is running already
+     *
+     * @param item the item to run the fetch on
+     */
+    private fun runService(item: FetchResult, modal: Boolean) {
+        if (pdfService != null && pdfService!!.isActive) {
+            return
+        }
+        Log.d("PDF Service", "Starting")
+
+        if (modal) {
+            http_bar_pdf_list.visibility = View.VISIBLE
+        }
+
+        pdfService = PDFService()
+        pdfService!!.startService(
+            args.folder,
+            item.itemUrl,
+            this,
+            item.itemUrl.endsWith("index.php", true)
+        ) //Only look for folders on the index page!
+    }
+
+    /**
      * Create the items to display upon starting the fragment.
      * All items are pulled from one directory
      *
@@ -89,51 +111,31 @@ class PDFListFragment : Fragment() {
         recycler_view_list.layoutManager = LinearLayoutManager(context)
         recycler_view_list.setHasFixedSize(true)
 
-        if (args.listFiles || pdfService != null) {
-            //If we are just listing files (no HTTP) or we have already visited this page
-            // then we can just set the recycler items
-            //Since we already have folders (or not) we don't need to complain
-            setRecyclerItems(true)
-        } else if (pdfService == null) {
-            //Block UI while the available files are fetched (but only if none exist already)
-            http_bar_pdf_list.visibility = View.VISIBLE
-        }
-
-        var item: FetchResult? = null
         //Try to load the meta file
-        try {
-            item = PDFOperations.loadMetaFile(args.folder)
+        val item: FetchResult? = try {
+            PDFOperations.loadMetaFile(args.folder)
         } catch (e: IOException) {
-            //TODO: Something
+            null
         } catch (e: FileNotFoundException) {
-            //TODO: Something
+            null
         }
 
         if (item == null) {
             //TODO: Something
+            Log.d("List Fragment", "Failed to load meta file")
             return
         }
 
-        //To check network status - we don't want to waste mobile data
-        val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        pdf_list_swipe_refresh.setOnRefreshListener {
+            runService(item, false)
+        }
 
-        //If we already have some files cached, and the network is metered then we *don't* want to re-download the PDFs
-        //Otherwise, we may as well re-download them. Since we don't delete old things this isn't a problem
-        //But don't download again in the same app instance (prevents re-downloading on navigation)
-        //TODO: Better invalidation logic (user setting), handle new and old PDFs being different (in PDFService)
-        if (!args.listFiles or !cm.isActiveNetworkMetered) {
-            if (pdfService != null && pdfService!!.isActive) {
-                return
-            }
-            Log.d("PDF Service", "Starting")
-
-            pdfService = PDFService()
-            pdfService!!.startService(
-                args.folder,
-                item.itemUrl,
-                this,
-                item.itemUrl.endsWith("index.php", true)
-            ) //Only look for folders on the index page!
+        //If we are in file listing mode then just list files
+        if (args.listFiles) {
+            //Load from the cache
+            setRecyclerItems(true)
+        } else {
+            runService(item, true)
         }
     }
 
@@ -181,6 +183,11 @@ class PDFListFragment : Fragment() {
 
         //Restore the view state
         recycler_view_list.layoutManager?.onRestoreInstanceState(recyclerViewState)
+
+        //If we came here from a refresh operation then make sure to note that we're done
+        if (pdf_list_swipe_refresh.isRefreshing) {
+            pdf_list_swipe_refresh.isRefreshing = false
+        }
     }
 
     /**

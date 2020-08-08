@@ -20,10 +20,12 @@ package com.otago.open
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
@@ -48,13 +50,17 @@ class MarkViewFragment : Fragment() {
      */
     private val javaScript =
         "function() {" +
-            "document.getElementsByTagName(\"body\")[0].innerHTML = document.getElementById('coursepagefullwidth').innerHTML;" +
-            "document.querySelectorAll('link[rel=\"stylesheet\"]').forEach(el => el.parentNode.removeChild(el));" +
-            "var footer = document.getElementsByClassName(\"footer\");" +
-            "if (footer && footer[0]) {" +
-                "footer[0].innerHTML = \"\"" +
+            "try {" +
+                "document.getElementsByTagName(\"body\")[0].innerHTML = document.getElementById('coursepagefullwidth').innerHTML;" +
+                "document.querySelectorAll('link[rel=\"stylesheet\"]').forEach(el => el.parentNode.removeChild(el));" +
+                "var footer = document.getElementsByClassName(\"footer\");" +
+                "if (footer && footer[0]) {" +
+                    "footer[0].innerHTML = \"\"" +
+                "}" +
+                "document.getElementsByTagName(\"body\")[0].style=\"margin: 5px; width: 100vw; box-sizing: border-box;\";" +
+            "} catch (err) {" +
+                "console.log(err);" +
             "}" +
-            "document.getElementsByTagName(\"body\")[0].style=\"margin: 5px; width: 100vw; box-sizing: border-box;\";" +
             "window.MarkJS.jsDone()" +
         "}"
 
@@ -89,23 +95,71 @@ class MarkViewFragment : Fragment() {
         activity!!.toolbar.title = args.navName
 
         mark_view.settings.javaScriptEnabled = true
+        mark_view.settings.domStorageEnabled = true
 
         mark_view.addJavascriptInterface(MarkJS(mark_view, http_bar_mark, activity as MainActivity), "MarkJS")
 
         mark_view.webViewClient = object : WebViewClient() {
+            /**
+             * Returns true if a given request should be overridden
+             * Always returns true
+             *
+             * @param view The associated [WebView]
+             * @param request The request to consider
+             *
+             * @return Whether to override the given request
+             */
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                super.shouldOverrideUrlLoading(view, request)
                 return true
             }
 
+            /**
+             * Handles an overridden request.
+             * Returns a dummy response if the request isn't for a marks.php web-page
+             *
+             * @param view The associated [WebView]
+             * @param request The request to consider
+             *
+             * @return A response to the given request
+             */
+            override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
+                if (request != null) {
+                    if (!request.url.toString().endsWith("marks.php")) {
+                        Log.d("Ignoring URL", request.url.toString())
+                        //Return a dummy URL
+                        return WebResourceResponse("text/javascript", "UTF-8", null)
+                    }
+                }
+
+                //If we don't care then return the default behaviour
+                return super.shouldInterceptRequest(view, request)
+            }
+
+            /**
+             * Handles loading of a resource
+             * Hides the WebView while resources are loading
+             *
+             * @param view The associated [WebView]
+             * @param url The URL for the resource that is being loaded
+             */
             override fun onLoadResource(view: WebView?, url: String?) {
-                mark_view.visibility = View.GONE
+                //Hide while loading - do this always as for some reason loading the favicon causes weird UI issues
+                mark_view.visibility = View.INVISIBLE
+                http_bar_mark.visibility = View.VISIBLE
                 super.onLoadResource(view, url)
             }
 
+            /**
+             * Handles the completion of the loading of a resource
+             * Starts the JavaScript function to tidy up the page
+             *
+             * @param view The associated [WebView]
+             * @param url The URL for the resource that has been loaded
+             */
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
 
+                Log.d("MarkJS", "JS Start")
                 //No questions please
                 view.loadUrl("javascript:($javaScript)()")
             }
@@ -128,6 +182,7 @@ class MarkViewFragment : Fragment() {
          */
         @android.webkit.JavascriptInterface
         fun jsDone() {
+            Log.d("MarkJS", "JS Done")
             activity.runOnUiThread {
                 markView.visibility = View.VISIBLE
                 httpBar.visibility = View.INVISIBLE

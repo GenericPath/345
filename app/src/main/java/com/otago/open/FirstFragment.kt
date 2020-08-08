@@ -25,6 +25,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import kotlinx.android.synthetic.main.fragment_first.*
 
 /**
  * The first navigation fragment the user sees
@@ -55,13 +56,13 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         //Go to list view
-        view.findViewById<Button>(R.id.listTest).setOnClickListener {
+        list_items.setOnClickListener {
             val action = FirstFragmentDirections.actionFirstFragmentToFetchFragment(true)
             findNavController().navigate(action)
         }
 
         //Go to fetch view
-        view.findViewById<Button>(R.id.fetchTest).setOnClickListener {
+        fetch_items.setOnClickListener {
             val action = FirstFragmentDirections.actionFirstFragmentToFetchFragment(false)
             findNavController().navigate(action)
         }
