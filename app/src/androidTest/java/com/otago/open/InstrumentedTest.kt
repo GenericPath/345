@@ -2,6 +2,7 @@ package com.otago.open
 
 import android.content.Context
 import android.util.Log
+import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 
@@ -59,5 +60,16 @@ class InstrumentedTest {
 
         val folderListing = PDFListFragment().generateFolderList(testFileDir.absolutePath)
         assertEquals(folderListing, PDFOperations.generatePdfItems(fetches))
+    }
+
+    /**
+     * Run test for *fragment.kt files
+     */
+    @Test
+    fun testFragments() {
+        // Based on  https://developer.android.com/training/basics/fragments/testing
+        val scenario = launchFragmentInContainer<PDFListFragment>()
+        scenario.recreate()
+        assertEquals(0,0)
     }
 }
