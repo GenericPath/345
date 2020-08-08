@@ -20,14 +20,27 @@ package com.otago.open
 
 import android.content.Context
 import android.util.Log
-import androidx.test.platform.app.InstrumentationRegistry
+import androidx.recyclerview.widget.RecyclerView
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
+import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.web.assertion.WebViewAssertions.webMatches
+import androidx.test.espresso.web.sugar.Web.onWebView
+import androidx.test.espresso.web.webdriver.DriverAtoms.*
+import androidx.test.espresso.web.webdriver.Locator
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-
+import androidx.test.platform.app.InstrumentationRegistry
+import junit.framework.AssertionFailedError
+import org.hamcrest.CoreMatchers.containsString
+import org.junit.Assert.assertEquals
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
 import java.io.File
+
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -36,6 +49,8 @@ import java.io.File
  */
 @RunWith(AndroidJUnit4::class)
 class InstrumentedTest {
+    @get:Rule var actRule = ActivityScenarioRule<MainActivity>(MainActivity::class.java)
+
     /**
      * Run test for [PDFOperations.createMetaFile] and [PDFOperations.loadMetaFile]
      */
@@ -77,5 +92,62 @@ class InstrumentedTest {
 
         val folderListing = PDFListFragment().generateFolderList(testFileDir.absolutePath)
         assertEquals(folderListing, PDFOperations.generatePdfItems(fetches))
+    }
+
+    /**
+     * A gift from Beelzebub
+     * Checks BJ's mark for assignment 1 in COSC344
+     */
+    @Test
+    fun testFirstFragment() {
+        onView(withId(R.id.textView)).check(matches(isDisplayed())).check(matches(withText(R.string.covid19_notice)))
+        onView(withId(R.id.fetch_items)).perform(click())
+
+        onView(withId(R.id.recycler_view_fetch)).check(matches(isDisplayed()))
+        onView(withId(R.id.http_bar_fetch)).check(matches(isDisplayed()))
+
+        try {
+            //I HATE THIS
+            //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
+            while (true) {
+                onView(withId(R.id.http_bar_fetch)).check(matches(isDisplayed()))
+            }
+        } catch (e: AssertionFailedError) {
+            onView(withId(R.id.recycler_view_fetch)).perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(
+                14, click()))
+
+            try {
+                //I HATE THIS
+                //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
+                while (true) {
+                    onView(withId(R.id.http_bar_pdf_list)).check(matches(isDisplayed()))
+                }
+            } catch (e: AssertionFailedError) {
+                onView(withId(R.id.recycler_view_list)).perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(
+                    3, click()))
+
+                try {
+                    //I HATE THIS
+                    //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
+                    while (true) {
+                        onView(withId(R.id.http_bar_mark)).check(matches(isDisplayed()))
+                    }
+                } catch (e: AssertionFailedError) {
+                    onView(withId(R.id.mark_view)).check(matches(isDisplayed()))
+                    onWebView().withElement(findElement(Locator.NAME,"stu_id")).perform(webKeys("2367465"))
+
+                    onWebView().withElement(findElement(Locator.NAME, "submit")).perform(webClick())
+                    try {
+                        //I HATE THIS
+                        //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
+                        while (true) {
+                            onView(withId(R.id.http_bar_mark)).check(matches(isDisplayed()))
+                        }
+                    } catch (e: AssertionFailedError) {
+                        onWebView().withElement(findElement(Locator.TAG_NAME, "body")).check(webMatches(getText(), containsString("Obtained Mark: 7.5")))
+                    }
+                }
+            }
+        }
     }
 }

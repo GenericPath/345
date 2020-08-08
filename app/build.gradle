@@ -73,6 +73,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-contrib:2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-web:3.1.0'
 
     implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
     implementation "androidx.recyclerview:recyclerview:1.1.0"
