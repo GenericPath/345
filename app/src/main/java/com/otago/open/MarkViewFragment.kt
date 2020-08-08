@@ -23,10 +23,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
+import kotlinx.android.synthetic.main.fragment_mark_view.*
+
 
 /**
  * A [Fragment] to view marks.
@@ -46,10 +50,11 @@ class MarkViewFragment : Fragment() {
             "document.getElementsByTagName(\"body\")[0].innerHTML = document.getElementById('coursepagefullwidth').innerHTML;" +
             "document.querySelectorAll('link[rel=\"stylesheet\"]').forEach(el => el.parentNode.removeChild(el));" +
             "var footer = document.getElementsByClassName(\"footer\");" +
-            "if (footer) {" +
+            "if (footer && footer[0]) {" +
                 "footer[0].innerHTML = \"\"" +
             "}" +
             "document.getElementsByTagName(\"body\")[0].style=\"margin: 5px; width: 100vw; box-sizing: border-box;\";" +
+            "window.MarkJS.jsDone()" +
         "}"
 
     /**
@@ -79,11 +84,22 @@ class MarkViewFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled") //Otherwise it complains about XSS - but that's the CS department's problem
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val markView = view.findViewById<WebView>(R.id.markView)
 
-        markView.settings.javaScriptEnabled = true
+        mark_view.settings.javaScriptEnabled = true
 
-        markView.webViewClient = object : WebViewClient() {
+        mark_view.addJavascriptInterface(MarkJS(mark_view, http_bar_mark, activity as MainActivity), "MarkJS")
+
+        mark_view.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                super.shouldOverrideUrlLoading(view, request)
+                return true
+            }
+
+            override fun onLoadResource(view: WebView?, url: String?) {
+                mark_view.visibility = View.GONE
+                super.onLoadResource(view, url)
+            }
+
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
 
@@ -92,6 +108,23 @@ class MarkViewFragment : Fragment() {
             }
         }
 
-        markView.loadUrl(args.postUrl)
+        mark_view.loadUrl(args.postUrl)
+    }
+
+    /**
+     *
+     */
+    class MarkJS(private val markView: WebView, private val httpBar: ProgressBar, private val activity: MainActivity) {
+
+        /**
+         *
+         */
+        @android.webkit.JavascriptInterface
+        fun jsDone() {
+            activity.runOnUiThread {
+                markView.visibility = View.VISIBLE
+                httpBar.visibility = View.INVISIBLE
+            }
+        }
     }
 }

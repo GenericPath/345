@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
      * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
      */
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppTheme_NoActionBar)
         super.onCreate(savedInstanceState)
 
         //Sets the layout

@@ -31,7 +31,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_fetch.*
-import kotlinx.android.synthetic.main.fragment_fetch.recycler_view
 import kotlinx.coroutines.*
 import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
@@ -95,7 +94,7 @@ class FetchFragment : Fragment() {
             setRecyclerItems(result)
         } else {
             //If we are checking the UoO website then show the progress bar and start the service
-            http_bar.visibility = View.VISIBLE
+            http_bar_fetch.visibility = View.VISIBLE
             startCourseService(false)
         }
     }
@@ -117,7 +116,7 @@ class FetchFragment : Fragment() {
             //If something fails then complain then just run it again
             Log.d("Fetch Fragment Saving", "Bundle restore failed")
             Toast.makeText(context, "Failed to load previous state - fetching again", Toast.LENGTH_SHORT).show()
-            http_bar.visibility = View.VISIBLE
+            http_bar_fetch.visibility = View.VISIBLE
             startCourseService(true)
             return
         }
@@ -259,14 +258,14 @@ class FetchFragment : Fragment() {
     fun setRecyclerItems(links: List<CourseItem>) {
         //If we are called from a coroutine which is running with a destroyed fragment
         //e.g. from after navigation we don't want to do anything here
-        if (recycler_view == null) {
+        if (recycler_view_fetch == null) {
             return
         }
         adapterItems = links
         //Create our recycler view adapter and the lambda to handle selection
-        recycler_view.adapter = CourseItemRecyclerViewAdapter(links) { link -> listItems(link) }
-        recycler_view.layoutManager = LinearLayoutManager(context)
-        recycler_view.setHasFixedSize(true)
+        recycler_view_fetch.adapter = CourseItemRecyclerViewAdapter(links) { link -> listItems(link) }
+        recycler_view_fetch.layoutManager = LinearLayoutManager(context)
+        recycler_view_fetch.setHasFixedSize(true)
     }
 
     /**
@@ -358,8 +357,8 @@ class FetchFragment : Fragment() {
 
                 withContext(Dispatchers.Main) {
                     //Update the UI on completion of paper fetch
-                    if (inFragment.http_bar != null) {
-                        inFragment.http_bar.visibility = View.GONE
+                    if (inFragment.http_bar_fetch != null) {
+                        inFragment.http_bar_fetch.visibility = View.INVISIBLE
                     }
                     //Null check done in setRecyclerItems
                     inFragment.setRecyclerItems(links.toList())

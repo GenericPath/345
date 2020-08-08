@@ -31,8 +31,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.fragment_fetch.*
-import kotlinx.android.synthetic.main.fragment_item_list.recycler_view
+import kotlinx.android.synthetic.main.fragment_pdf_list_view.*
 import kotlinx.coroutines.*
 import java.io.*
 import kotlin.collections.ArrayList
@@ -84,17 +83,17 @@ class PDFListFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        recycler_view.layoutManager = LinearLayoutManager(context)
-        recycler_view.setHasFixedSize(true)
+        recycler_view_list.layoutManager = LinearLayoutManager(context)
+        recycler_view_list.setHasFixedSize(true)
 
         if (args.listFiles || pdfService != null) {
             //If we are just listing files (no HTTP) or we have already visited this page
             // then we can just set the recycler items
             //Since we already have folders (or not) we don't need to complain
-            setRecyclerItems(false)
+            setRecyclerItems(true)
         } else if (pdfService == null) {
             //Block UI while the available files are fetched (but only if none exist already)
-            http_bar.visibility = View.VISIBLE
+            http_bar_pdf_list.visibility = View.VISIBLE
         }
 
         var item: FetchResult? = null
@@ -155,7 +154,7 @@ class PDFListFragment : Fragment() {
     private fun setRecyclerItems(cacheMessage: Boolean, list: List<PDFItem>) {
         //If we are called from a coroutine which is running with a destroyed fragment
         //e.g. from after navigation we don't want to do anything here
-        if (recycler_view == null) {
+        if (recycler_view_list == null) {
             return
         }
 
@@ -170,15 +169,15 @@ class PDFListFragment : Fragment() {
         }
 
         //Preserve the view state (i.e. the scroll position)
-        val recyclerViewState = recycler_view.layoutManager?.onSaveInstanceState()
+        val recyclerViewState = recycler_view_list.layoutManager?.onSaveInstanceState()
 
         //Add to the recycler, with openFile as the click event handler
-        recycler_view.adapter = PDFItemRecyclerViewAdapter(list) { item ->
+        recycler_view_list.adapter = PDFItemRecyclerViewAdapter(list) { item ->
             openFile(item)
         }
 
         //Restore the view state
-        recycler_view.layoutManager?.onRestoreInstanceState(recyclerViewState)
+        recycler_view_list.layoutManager?.onRestoreInstanceState(recyclerViewState)
     }
 
     /**
@@ -306,11 +305,11 @@ class PDFListFragment : Fragment() {
                 val pdfs = PDFOperations.generatePdfItems(fetchedLinks)
 
                 withContext(Dispatchers.Main) {
-                    if (inFragment.http_bar != null) {
-                        inFragment.http_bar.visibility = View.GONE
+                    if (inFragment.http_bar_pdf_list != null) {
+                        inFragment.http_bar_pdf_list.visibility = View.INVISIBLE
                     }
                     //If we are just listing files don't complain if we don't find any - they will see that already
-                    inFragment.setRecyclerItems(!inFragment.args.listFiles, pdfs)
+                    inFragment.setRecyclerItems(inFragment.args.listFiles, pdfs)
                 }
 
                 //If we do have links, download them

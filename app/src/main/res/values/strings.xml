@@ -3,7 +3,6 @@
 
     <string name="list_test">View Course PDFs</string>
     <string name="fetch_test">Select Courses</string>
-    <string name="open_pdf">Open PDF</string>
-
     <string name="covid19_notice">Some papers are not using the cs.otago.ac.nz website for lecture and tutorial content due to the ongoing COVID-19 related disruption. The 200-level core papers appear to more or less have content</string>
+    <string name="listImage">Icon for PDF or Folder</string>
 </resources>

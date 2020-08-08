@@ -86,7 +86,7 @@ class PDFViewFragment : Fragment() {
     private fun showPdf(url: String, pdfView: PDFView) {
         Log.d("View PDF (URL)", url)
 
-        this.http_bar.visibility = View.VISIBLE
+        this.http_bar_pdf_view.visibility = View.VISIBLE
 
         TempService.startService(url, ContextWrapper(context).cacheDir.absolutePath, "view.pdf", this, pdfView)
     }
@@ -149,7 +149,8 @@ class PDFViewFragment : Fragment() {
                 PDFOperations.downloadFile(url, parentFolder, fileName)
 
                 withContext(Dispatchers.Main) {
-                    inFragment.http_bar.visibility = View.GONE
+                    inFragment.http_bar_pdf_view.visibility = View.INVISIBLE
+                    pdfView.visibility = View.VISIBLE
                     inFragment.showPdf(File(parentFolder, fileName), pdfView)
                 }
             }

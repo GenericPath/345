@@ -3,9 +3,4 @@
     <color name="colorPrimary">#26A1FF</color>
     <color name="colorPrimaryDark">#3D6EFF</color>
     <color name="colorAccent">#03DAC5</color>
-    <color name="screenBackground">#FFFFFF</color>
-    <color name="buttonBackground">#C5E0F6</color>
-    <color name="screenBackground2">#C3F4FA</color>
-    <color name="screenBackground3">#F8DACF</color>
-    <color name="pdfBackground">#fafafa</color>
 </resources>
