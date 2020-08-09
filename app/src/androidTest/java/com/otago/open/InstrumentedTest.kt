@@ -123,15 +123,15 @@ class InstrumentedTest {
                 onView(withId(R.id.http_bar_fetch)).check(matches(isDisplayed()))
             }
         } catch (e: AssertionFailedError) {
+            activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
             onView(withId(R.id.recycler_view_fetch)).perform(
                 actionOnItem<RecyclerView.ViewHolder>(
                     hasDescendant(withText("COSC344 Database Theory and Applications")),
                     click()
                 )
             )
-
-            activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
             try {
                 //I HATE THIS
@@ -197,6 +197,9 @@ class InstrumentedTest {
                 click()
             )
         )
+
+        activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         onView(withId(R.id.recycler_view_list)).perform(
             actionOnItem<RecyclerView.ViewHolder>(
