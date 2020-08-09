@@ -131,7 +131,8 @@ class PDFListFragment : Fragment() {
         }
 
         //If we are in file listing mode then just list files
-        if (args.listFiles) {
+        //Or, regardless of state, if we have a saved instance then just list (nothing's changed)
+        if (args.listFiles || savedInstanceState != null) {
             //Load from the cache
             setRecyclerItems(true)
         } else {
