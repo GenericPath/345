@@ -40,6 +40,16 @@ import kotlin.collections.ArrayList
  */
 class PDFListFragment : Fragment() {
     /**
+     * The items in the recycler
+     */
+    private var adapterItems : List<PDFItem> = emptyList()
+
+    /**
+     * Whether the [adapterItems] parameter is valid
+     */
+    private var hasItems: Boolean = false
+
+    /**
      * Args to pass in directory navigated to
      */
     private val args : PDFListFragmentArgs by navArgs()
@@ -71,7 +81,7 @@ class PDFListFragment : Fragment() {
      */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         activity!!.toolbar.title = args.navName
-
+        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_pdf_list_view, container, false)
     }
 
@@ -97,6 +107,98 @@ class PDFListFragment : Fragment() {
             this,
             item.itemUrl.endsWith("index.php", true)
         ) //Only look for folders on the index page!
+    }
+
+    /**
+     * Loads the saved [PDFItem] instances in case of a restoration of state
+     * Also called when the screen is rotated
+     *
+     * @param savedInstanceState The (saved) state of the application
+     */
+    private fun restoreState(savedInstanceState: Bundle) {
+        Log.d("Fetch Fragment Saving", "Restoring bundle")
+
+        val coscName = savedInstanceState.getStringArray("coscNames")
+        val imageResource = savedInstanceState.getIntArray("imageResources")
+        val itemFile = savedInstanceState.getStringArray("itemFiles")
+        val itemUrl = savedInstanceState.getStringArray("itemUrls")
+        val pathType = savedInstanceState.getStringArray("pathTypes")
+
+        if (coscName == null || imageResource == null || itemFile == null || itemUrl == null || pathType == null) {
+            //If something fails then complain then just run it again
+            Log.d("List Fragment Saving", "Bundle restore failed")
+            Toast.makeText(context, "Failed to load previous state - listing again", Toast.LENGTH_SHORT).show()
+            setRecyclerItems(true)
+            return
+        }
+
+        val incomingItems = ArrayList<PDFItem>()
+        coscName.forEachIndexed { i, it ->
+            incomingItems.add(
+                PDFItem(
+                    imageResource[i],
+                    FileNavigatorType.valueOf(pathType[i]),
+                    itemFile[i],
+                    itemUrl[i],
+                    it
+                )
+            )
+        }
+
+        //Load the recycler
+        setRecyclerItems(null, incomingItems.toList())
+    }
+
+    /**
+     * Event handler for saving the state when the user navigates away or rotates the screen
+     *
+     * @param outState bundle the bundle in which to package any relevant information
+     */
+    override fun onSaveInstanceState(outState: Bundle) {
+        Log.d("List Fragment Saving", "Creating bundle")
+        if (adapterItems.isEmpty()) {
+            outState.putString("emptyState", if (http_bar_pdf_list.visibility == View.VISIBLE) "fetching" else "empty")
+        } else {
+            val coscName = Array(adapterItems.size) {
+                adapterItems[it].coscName
+            }
+            val imageResource = IntArray(adapterItems.size) {
+                adapterItems[it].imageResource
+            }
+            val itemFile = Array(adapterItems.size) {
+                adapterItems[it].itemFile
+            }
+            val itemUrl = Array(adapterItems.size) {
+                adapterItems[it].itemUrl
+            }
+
+            val pathType = Array(adapterItems.size) {
+                adapterItems[it].pathType.name
+            }
+
+            outState.putStringArray("coscNames", coscName)
+            outState.putIntArray("imageResources", imageResource)
+            outState.putStringArray("itemFiles", itemFile)
+            outState.putStringArray("itemUrls", itemUrl)
+            outState.putStringArray("pathTypes", pathType)
+        }
+
+        super.onSaveInstanceState(outState)
+    }
+
+    /**
+     * Sets the [adapterItems] and marks it as being correct
+     * Also updates the UI if it exists
+     *
+     * @param links The items to add
+     */
+    fun notify(links: List<PDFItem>) {
+        //Update the UI on completion of paper fetch
+        if (http_bar_pdf_list != null) {
+            http_bar_pdf_list.visibility = View.INVISIBLE
+        }
+        setRecyclerItems(args.listFiles, links)
+        hasItems = true
     }
 
     /**
@@ -126,17 +228,34 @@ class PDFListFragment : Fragment() {
             return
         }
 
+        //Set pull down listener
         pdf_list_swipe_refresh.setOnRefreshListener {
             runService(item, false)
         }
 
-        //If we are in file listing mode then just list files
-        //Or, regardless of state, if we have a saved instance then just list (nothing's changed)
-        if (args.listFiles || savedInstanceState != null) {
-            //Load from the cache
-            setRecyclerItems(true)
-        } else {
-            runService(item, true)
+        if (savedInstanceState == null) {
+            Log.d("Fetch Activity Created", "Fetching")
+            if (hasItems) {
+                setRecyclerItems(null, adapterItems)
+            } else {
+                runService(item, true)
+            }
+        }
+        else  {
+            //Restore state
+            Log.d("Fetch Activity Created", "Restoring from saved state")
+            when (savedInstanceState.getString("emptyState")) {
+                null -> {
+                    restoreState(savedInstanceState)
+                }
+                "fetching" -> {
+                    Log.d("Restoring", "Still fetching")
+                    http_bar_pdf_list.visibility = View.VISIBLE
+                }
+                "empty" -> {
+                    setRecyclerItems(null, adapterItems)
+                }
+            }
         }
     }
 
@@ -146,7 +265,7 @@ class PDFListFragment : Fragment() {
      * @param cacheMessage - Whether to send a toast about having no files present in the cache or about no files at all
      */
     @Suppress("SameParameterValue") //TODO: Check this - needed to make the warning go away but the warning doesn't seem to be true?
-    private fun setRecyclerItems(cacheMessage: Boolean) {
+    private fun setRecyclerItems(cacheMessage: Boolean?) {
         //Generate the file list
         setRecyclerItems(cacheMessage, generateFolderList(args.folder))
     }
@@ -157,15 +276,17 @@ class PDFListFragment : Fragment() {
      * @param cacheMessage - Whether to send a toast about having no files present
      * @param list - The [PDFItem]s to add
      */
-    private fun setRecyclerItems(cacheMessage: Boolean, list: List<PDFItem>) {
+    private fun setRecyclerItems(cacheMessage: Boolean?, list: List<PDFItem>) {
         //If we are called from a coroutine which is running with a destroyed fragment
         //e.g. from after navigation we don't want to do anything here
         if (recycler_view_list == null) {
             return
         }
 
+        adapterItems = list
+
         //Only send the message if we want to
-        if (list.isEmpty()) {
+        if (list.isEmpty() && cacheMessage != null) {
             if (cacheMessage)
             {
                 Toast.makeText(context, "No content downloaded yet", Toast.LENGTH_SHORT).show()
@@ -321,7 +442,7 @@ class PDFListFragment : Fragment() {
                         inFragment.http_bar_pdf_list.visibility = View.INVISIBLE
                     }
                     //If we are just listing files don't complain if we don't find any - they will see that already
-                    inFragment.setRecyclerItems(inFragment.args.listFiles, pdfs)
+                    inFragment.notify(pdfs)
                 }
 
                 //If we do have links, download them

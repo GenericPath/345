@@ -140,6 +140,9 @@ class InstrumentedTest {
                     onView(withId(R.id.http_bar_pdf_list)).check(matches(isDisplayed()))
                 }
             } catch (e: AssertionFailedError) {
+                activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
                 onView(withId(R.id.recycler_view_list)).perform(
                     actionOnItem<RecyclerView.ViewHolder>(
                         hasDescendant(withText("Marks")),

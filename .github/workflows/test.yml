@@ -24,6 +24,7 @@ jobs:
         with:
           api-level: 29
           script: ./gradlew connectedCheck
+          disable-animations: true
 
       - name: Generate Code Coverage reports
         run: |

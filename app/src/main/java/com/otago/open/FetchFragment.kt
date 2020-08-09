@@ -52,6 +52,11 @@ class FetchFragment : Fragment() {
     private var adapterItems : List<CourseItem> = emptyList()
 
     /**
+     * Whether the [adapterItems] parameter is valid
+     */
+    private var hasItems: Boolean = false
+
+    /**
      * The navigation arguments, for whether to list or download files
      */
     private val args : FetchFragmentArgs by navArgs()
@@ -148,29 +153,48 @@ class FetchFragment : Fragment() {
     }
 
     /**
+     * Sets the [adapterItems] and marks it as being correct
+     * Also updates the UI if it exists
+     *
+     * @param links The items to add
+     */
+    fun notify(links: List<CourseItem>) {
+        //Update the UI on completion of paper fetch
+        if (http_bar_fetch != null) {
+            http_bar_fetch.visibility = View.INVISIBLE
+        }
+        setRecyclerItems(links)
+        hasItems = true
+    }
+
+    /**
      * Event handler for saving the state when the user navigates away or rotates the screen
      *
-     * @param outState bundle the bundle in which to package any relevant information
+     * @param outState The bundle in which to package any relevant information
      */
     override fun onSaveInstanceState(outState: Bundle) {
         Log.d("Fetch Fragment Saving", "Creating bundle")
-        val code = Array(adapterItems.size) {
-            adapterItems[it].courseCode
-        }
-        val name = Array(adapterItems.size) {
-            adapterItems[it].courseName
-        }
-        val url = Array(adapterItems.size) {
-            adapterItems[it].courseUrl
-        }
-        val resId = IntArray(adapterItems.size) {
-            adapterItems[it].imageResource
-        }
+        if (adapterItems.isEmpty()) {
+            outState.putString("emptyState", if (http_bar_fetch.visibility == View.VISIBLE) "fetching" else "empty")
+        } else {
+            val code = Array(adapterItems.size) {
+                adapterItems[it].courseCode
+            }
+            val name = Array(adapterItems.size) {
+                adapterItems[it].courseName
+            }
+            val url = Array(adapterItems.size) {
+                adapterItems[it].courseUrl
+            }
+            val resId = IntArray(adapterItems.size) {
+                adapterItems[it].imageResource
+            }
 
-        outState.putStringArray("courseCodes", code)
-        outState.putStringArray("courseNames", name)
-        outState.putStringArray("courseUrls", url)
-        outState.putIntArray("courseResIds", resId)
+            outState.putStringArray("courseCodes", code)
+            outState.putStringArray("courseNames", name)
+            outState.putStringArray("courseUrls", url)
+            outState.putIntArray("courseResIds", resId)
+        }
 
         super.onSaveInstanceState(outState)
     }
@@ -185,12 +209,9 @@ class FetchFragment : Fragment() {
      * @return The layout generated from the XML
      */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        activity!!.toolbar.title = getString(R.string.app_name)
         // Inflate the layout for this fragment
-        return if (view == null) {
-            inflater.inflate(R.layout.fragment_fetch, container, false)
-        } else {
-            view
-        }
+        return inflater.inflate(R.layout.fragment_fetch, container, false)
     }
 
     /**
@@ -232,23 +253,30 @@ class FetchFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        activity!!.toolbar.title = getString(R.string.app_name)
-
         //If we have items from a previous state, then just re-add them here
         //Otherwise, try to restore, or if there is nothing to restore then just re-fetch
-        when {
-            adapterItems.isNotEmpty() -> {
-                Log.d("Fetch Activity Created", "Restoring from instance")
+        if (savedInstanceState == null) {
+            Log.d("Fetch Activity Created", "Fetching")
+            if (hasItems) {
                 setRecyclerItems(adapterItems)
-            }
-            savedInstanceState == null -> {
-                Log.d("Fetch Activity Created", "Fetching")
+            } else {
                 newState()
             }
-            else -> {
-                //Restore state
-                Log.d("Fetch Activity Created", "Restoring from saved state")
-                restoreState(savedInstanceState)
+        }
+        else  {
+            //Restore state
+            Log.d("Fetch Activity Created", "Restoring from saved state")
+            when (savedInstanceState.getString("emptyState")) {
+                null -> {
+                    restoreState(savedInstanceState)
+                }
+                "fetching" -> {
+                    Log.d("Restoring", "Still fetching")
+                    http_bar_fetch.visibility = View.VISIBLE
+                }
+                "empty" -> {
+                    setRecyclerItems(adapterItems)
+                }
             }
         }
     }
@@ -258,13 +286,11 @@ class FetchFragment : Fragment() {
      *
      * @param links The links to add
      */
-    fun setRecyclerItems(links: List<CourseItem>) {
-        //If we are called from a coroutine which is running with a destroyed fragment
-        //e.g. from after navigation we don't want to do anything here
+    private fun setRecyclerItems(links: List<CourseItem>) {
+        adapterItems = links
         if (recycler_view_fetch == null) {
             return
         }
-        adapterItems = links
         //Create our recycler view adapter and the lambda to handle selection
         recycler_view_fetch.adapter = CourseItemRecyclerViewAdapter(links) { link -> listItems(link) }
         recycler_view_fetch.layoutManager = LinearLayoutManager(context)
@@ -359,12 +385,7 @@ class FetchFragment : Fragment() {
                 }
 
                 withContext(Dispatchers.Main) {
-                    //Update the UI on completion of paper fetch
-                    if (inFragment.http_bar_fetch != null) {
-                        inFragment.http_bar_fetch.visibility = View.INVISIBLE
-                    }
-                    //Null check done in setRecyclerItems
-                    inFragment.setRecyclerItems(links.toList())
+                    inFragment.notify(links.toList())
                 }
             }
         }
