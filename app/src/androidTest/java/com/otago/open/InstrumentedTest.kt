@@ -18,7 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package com.otago.open
 
+import android.app.Activity
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
@@ -176,7 +178,12 @@ class InstrumentedTest {
 
         onView(withId(R.id.recycler_view_fetch)).check(matches(isDisplayed()))
 
+        var activity: Activity? = null
 
+        actRule.scenario.onActivity { activity = it }
+
+        activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         onView(withId(R.id.recycler_view_fetch)).perform(
             actionOnItem<RecyclerView.ViewHolder>(
@@ -215,6 +222,7 @@ class InstrumentedTest {
         }
 
         pressBack()
+        pressBack()
 
         onView(withId(R.id.recycler_view_list)).perform(
             actionOnItem<RecyclerView.ViewHolder>(
@@ -222,7 +230,7 @@ class InstrumentedTest {
                 click()
             )
         )
-        onView(withId(R.id.recycler_view_list)).perform(swipeDown());
+        onView(withId(R.id.recycler_view_list)).perform(swipeDown())
 
         while (true) {
             try {
