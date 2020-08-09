@@ -5,11 +5,19 @@
 
 <table>
 <tr>
-    <td>see <a href="https://github.com/GenericPath/345/blob/master/proposal/proposal.pdf">proposal</a></td> 
+    <td>See <a href="https://github.com/GenericPath/345/blob/master/proposal/proposal.pdf">proposal</a></td> 
 </tr>
 
 <tr>
-    <td>see <a href="https://zyviax.github.io/345Documentation/app/index.html">latest documentation</a></td>
+    <td>See <a href="https://zyviax.github.io/345Documentation/app/index.html">latest documentation</a></td>
+</tr>
+
+<tr>
+    <td>See <a href="https://github.com/GenericPath/345/issues">issues</a></td>
+</tr>
+
+<tr>
+    <td>See <a href="https://github.com/GenericPath/345/blob/master/app/src/test/java/com/otago/open/UnitTest.kt">unit tests</a> & <a       href="https://github.com/GenericPath/345/blob/master/app/src/androidTest/java/com/otago/open/InstrumentedTest.kt">instrumented tests</a></td>
 </tr>
 </table>
 
