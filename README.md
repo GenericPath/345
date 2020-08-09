@@ -32,7 +32,6 @@ All submitted code runs on the CI pipelines defined in ```.github/workflows/```
 
 ```test.yml```
 
--   Tests code quality (lintDebug)
 -   Runs unit tests (testDebug)
 -   Runs instrumented tests (connectedCheck)
 
