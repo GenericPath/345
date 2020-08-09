@@ -109,22 +109,30 @@ class InstrumentedTest {
         var activity: Activity? = null
         actRule.scenario.onActivity { activity = it }
 
+        val sleepTime: Long = 500
+
         onView(withId(R.id.textView)).check(matches(isDisplayed()))
             .check(matches(withText(R.string.covid19_notice)))
         onView(withId(R.id.fetch_items)).perform(click())
+        Thread.sleep(sleepTime)
 
         onView(withId(R.id.recycler_view_fetch)).check(matches(isDisplayed()))
         onView(withId(R.id.http_bar_fetch)).check(matches(isDisplayed()))
+
+        Thread.sleep(sleepTime)
 
         try {
             //I HATE THIS
             //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
             while (true) {
                 onView(withId(R.id.http_bar_fetch)).check(matches(isDisplayed()))
+                Thread.sleep(sleepTime)
             }
         } catch (e: AssertionFailedError) {
             activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            Thread.sleep(sleepTime)
             activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            Thread.sleep(sleepTime)
 
             onView(withId(R.id.recycler_view_fetch)).perform(
                 actionOnItem<RecyclerView.ViewHolder>(
@@ -132,16 +140,20 @@ class InstrumentedTest {
                     click()
                 )
             )
+            Thread.sleep(sleepTime)
 
             try {
                 //I HATE THIS
                 //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
                 while (true) {
                     onView(withId(R.id.http_bar_pdf_list)).check(matches(isDisplayed()))
+                    Thread.sleep(sleepTime)
                 }
             } catch (e: AssertionFailedError) {
                 activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                Thread.sleep(sleepTime)
                 activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                Thread.sleep(sleepTime)
 
                 onView(withId(R.id.recycler_view_list)).perform(
                     actionOnItem<RecyclerView.ViewHolder>(
@@ -149,47 +161,62 @@ class InstrumentedTest {
                         click()
                     )
                 )
+                Thread.sleep(sleepTime)
 
                 try {
                     //I HATE THIS
                     //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
                     while (true) {
                         onView(withId(R.id.http_bar_mark)).check(matches(isDisplayed()))
+                        Thread.sleep(sleepTime)
                     }
                 } catch (e: AssertionFailedError) {
                     onView(withId(R.id.mark_view)).check(matches(isDisplayed()))
                     onWebView().withElement(findElement(Locator.NAME, "stu_id"))
                         .perform(webKeys("2367465"))
+                    Thread.sleep(sleepTime)
 
                     onWebView().withElement(findElement(Locator.NAME, "submit")).perform(webClick())
+                    Thread.sleep(sleepTime)
                     try {
                         //I HATE THIS
                         //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
                         while (true) {
                             onView(withId(R.id.http_bar_mark)).check(matches(isDisplayed()))
+                            Thread.sleep(sleepTime)
                         }
                     } catch (e: AssertionFailedError) {
                         onWebView().withElement(findElement(Locator.TAG_NAME, "body"))
                             .check(webMatches(getText(), containsString("Obtained Mark: 7.5")))
+                        Thread.sleep(sleepTime)
                     }
                 }
             }
         }
 
         pressBack()
+        Thread.sleep(sleepTime)
         pressBack()
+        Thread.sleep(sleepTime)
         pressBack()
+        Thread.sleep(sleepTime)
         pressBack()
+        Thread.sleep(sleepTime)
 
         onView(withId(R.id.textView)).check(matches(isDisplayed()))
             .check(matches(withText(R.string.covid19_notice)))
+        Thread.sleep(sleepTime)
 
         onView(withId(R.id.list_items)).perform(click())
+        Thread.sleep(sleepTime)
 
         onView(withId(R.id.recycler_view_fetch)).check(matches(isDisplayed()))
+        Thread.sleep(sleepTime)
 
         activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        Thread.sleep(sleepTime)
         activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        Thread.sleep(sleepTime)
 
         onView(withId(R.id.recycler_view_fetch)).perform(
             actionOnItem<RecyclerView.ViewHolder>(
@@ -197,9 +224,12 @@ class InstrumentedTest {
                 click()
             )
         )
+        Thread.sleep(sleepTime)
 
         activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        Thread.sleep(sleepTime)
         activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        Thread.sleep(sleepTime)
 
         onView(withId(R.id.recycler_view_list)).perform(
             actionOnItem<RecyclerView.ViewHolder>(
@@ -207,31 +237,40 @@ class InstrumentedTest {
                 click()
             )
         )
+        Thread.sleep(sleepTime)
+
         try {
             //I HATE THIS
             //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
             while (true) {
                 onView(withId(R.id.http_bar_mark)).check(matches(isDisplayed()))
+                Thread.sleep(sleepTime)
             }
         } catch (e: AssertionFailedError) {
             onView(withId(R.id.mark_view)).check(matches(isDisplayed()))
             onWebView().withElement(findElement(Locator.NAME, "stu_id")).perform(webKeys("2367465"))
+            Thread.sleep(sleepTime)
 
             onWebView().withElement(findElement(Locator.NAME, "submit")).perform(webClick())
+            Thread.sleep(sleepTime)
             try {
                 //I HATE THIS
                 //I HATE THAT THIS IS THE SIMPLEST WAY TO DO THIS
                 while (true) {
                     onView(withId(R.id.http_bar_mark)).check(matches(isDisplayed()))
+                    Thread.sleep(sleepTime)
                 }
             } catch (e: AssertionFailedError) {
                 onWebView().withElement(findElement(Locator.TAG_NAME, "body"))
                     .check(webMatches(getText(), containsString("Obtained Mark: 7.5")))
+                Thread.sleep(sleepTime)
             }
         }
 
         pressBack()
+        Thread.sleep(sleepTime)
         pressBack()
+        Thread.sleep(sleepTime)
 
         onView(withId(R.id.recycler_view_list)).perform(
             actionOnItem<RecyclerView.ViewHolder>(
@@ -239,11 +278,14 @@ class InstrumentedTest {
                 click()
             )
         )
+        Thread.sleep(sleepTime)
         onView(withId(R.id.recycler_view_list)).perform(swipeDown())
+        Thread.sleep(sleepTime)
 
         while (true) {
             try {
                 onView(withId(R.id.recycler_view_list)).perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+                Thread.sleep(sleepTime)
                 break
             } catch (e: PerformException) { } //Delay here
         }
@@ -251,13 +293,18 @@ class InstrumentedTest {
         while (true) {
             try {
                 onView(withId(R.id.pdf_view)).check(matches(isDisplayed()))
+                Thread.sleep(sleepTime)
                 break
             } catch (e: AssertionError) { } //Delay here
         }
 
         pressBack()
+        Thread.sleep(sleepTime)
         pressBack()
+        Thread.sleep(sleepTime)
         pressBack()
+        Thread.sleep(sleepTime)
         pressBack()
+        Thread.sleep(sleepTime)
     }
 }
