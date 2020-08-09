@@ -25,15 +25,33 @@ All submitted code runs on the CI pipelines defined in ```.github/workflows/```
 ```test.yml```
 
 -   Tests code quality (lintDebug)
--   Run unit tests (testDebug)
- 
+-   Runs unit tests (testDebug)
+-   Runs instrumented tests (connectedCheck)
+
 ```build.yml```
 
--   Tests debug build success (assembleDebug)  
+-   Tests debug build success (assembleDebug)
 
 ```publishDocs.yml```
 
 -   Deploy documentation pages (dokka)
+
+---
+## *Beta release*
+
+The alpha release notes still apply, with the following additions:
+
+**To run instrumentation tests**
+
+-   ```./gradlew connectedCheck``` (Run instrumentation tests)
+
+This will need a suitable device to run on (e.g. an emulator).
+This is more easily done via Android Studio.
+
+**To do for final release**
+-   Redo UI (users will select the courses they want to follow and then these will be listed and refeshed as appropriate)
+-   Improve error handling
+-   Implement MATH/STAT support
 
 ---
 ## *Alpha release* 

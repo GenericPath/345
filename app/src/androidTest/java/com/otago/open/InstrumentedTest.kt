@@ -131,6 +131,7 @@ class InstrumentedTest {
             )
 
             activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
             try {
                 //I HATE THIS
@@ -180,12 +181,12 @@ class InstrumentedTest {
         onView(withId(R.id.textView)).check(matches(isDisplayed()))
             .check(matches(withText(R.string.covid19_notice)))
 
-        activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         onView(withId(R.id.list_items)).perform(click())
 
         onView(withId(R.id.recycler_view_fetch)).check(matches(isDisplayed()))
 
         activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         onView(withId(R.id.recycler_view_fetch)).perform(
             actionOnItem<RecyclerView.ViewHolder>(
