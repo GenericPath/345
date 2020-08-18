@@ -26,7 +26,7 @@ Each commit runs the pipelines found in ```.github/workflows/```
 
 ```publishDocs.yml```
 
--   Deploys <a href="">documentation</a>
+-   Deploys <a href="https://zyviax.github.io/345Documentation/app/index.html">documentation</a>
 
 <a href=https://app.codacy.com/manual/garth.dhnz/345/dashboard>Codacy</a> completes static analysis on each commit to recognise potential code pitfalls.
 
