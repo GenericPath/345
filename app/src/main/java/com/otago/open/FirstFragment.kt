@@ -51,6 +51,16 @@ class FirstFragment : Fragment() {
     }
 
     /**
+     * Save invalidation status across reloading the activity / fragment
+     *
+     * @param outState The bundle to save the data in to
+     */
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("invalidated", invalidated)
+    }
+
+    /**
      * Handles the creation of the views
      * Adds handlers to the buttons
      *
@@ -60,11 +70,16 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (savedInstanceState != null) {
+            val invalidated = savedInstanceState.getBoolean("invalidated")
+            this.invalidated = invalidated
+        }
+
         //Go to list view
         select_items.setOnClickListener {
             val action = FirstFragmentDirections.actionFirstFragmentToSelectFragment()
             findNavController().navigate(action)
-            invalidated = true;
+            invalidated = true
             Log.d("Select Invalidation Status", invalidated.toString())
         }
 
@@ -74,7 +89,7 @@ class FirstFragment : Fragment() {
             Log.d("List Invalidation Status", invalidated.toString())
             val action = FirstFragmentDirections.actionFirstFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath, null, !invalidated, "OpenOtago")
             findNavController().navigate(action)
-            invalidated = false;
+            invalidated = false
         }
     }
 }
