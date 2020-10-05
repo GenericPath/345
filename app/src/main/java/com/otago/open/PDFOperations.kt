@@ -42,7 +42,7 @@ object PDFOperations {
      *
      * @return The icon's ID
      */
-    fun getResourceItem(navType: FileNavigatorType): Int {
+    private fun getResourceItem(navType: FileNavigatorType): Int {
         return when (navType) {
             FileNavigatorType.FOLDER -> R.drawable.ic_folder
             FileNavigatorType.PDF -> R.drawable.ic_pdf

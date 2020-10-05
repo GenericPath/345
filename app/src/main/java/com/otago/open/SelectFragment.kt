@@ -26,12 +26,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.fragment_fetch.*
+import kotlinx.android.synthetic.main.fragment_select.*
 import kotlinx.coroutines.*
 import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
@@ -43,9 +40,9 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 /**
- * The class for the fragment to fetch the courses
+ * The class for the fragment to select / fetch the courses
  */
-class FetchFragment : Fragment() {
+class SelectFragment : Fragment() {
     /**
      * The items in the recycler
      */
@@ -57,17 +54,12 @@ class FetchFragment : Fragment() {
     private var hasItems: Boolean = false
 
     /**
-     * The navigation arguments, for whether to list or download files
-     */
-    private val args : FetchFragmentArgs by navArgs()
-
-    /**
      * The coroutine to use for checking for courses
      */
     private var courseService: CourseService? = null
 
     /**
-     * Entry point for creating a [FetchFragment]
+     * Entry point for creating a [SelectFragment]
      * Ensure that the instance is retained on back button press
      *
      * @param savedInstanceState The state of the application (e.g. if it has been reloaded)
@@ -81,28 +73,9 @@ class FetchFragment : Fragment() {
      * Sets the fragment up normally
      */
     private fun newState() {
-        //If we are just listing files then we just load from the cache
-        if (args.listFiles) {
-            //The folder all the courses are stored in
-            val dataFolder = File(ContextWrapper(context).filesDir.absolutePath)
-            val result = ArrayList<CourseItem>()
-
-            dataFolder.listFiles()?.forEach {it ->
-                val item = getCourseItem(it)
-
-                //TODO: Handle null (something)
-                if (item != null) {
-                    result.add(item)
-                }
-            }
-
-            //Set the recycler items
-            setRecyclerItems(result)
-        } else {
-            //If we are checking the UoO website then show the progress bar and start the service
-            http_bar_fetch.visibility = View.VISIBLE
-            startCourseService(false)
-        }
+        //We are checking the UoO website then show the progress bar and start the service
+        http_bar_select.visibility = View.VISIBLE
+        startCourseService(false)
     }
 
     /**
@@ -112,24 +85,25 @@ class FetchFragment : Fragment() {
      * @param savedInstanceState The (saved) state of the application
      */
     private fun restoreState(savedInstanceState: Bundle) {
-        Log.d("Fetch Fragment Saving", "Restoring bundle")
+        Log.d("Select Fragment Saving", "Restoring bundle")
         val code = savedInstanceState.getStringArray("courseCodes")
         val name = savedInstanceState.getStringArray("courseNames")
         val url = savedInstanceState.getStringArray("courseUrls")
         val resId = savedInstanceState.getIntArray("courseResIds")
+        val selected = savedInstanceState.getBooleanArray("courseSelected")
 
-        if (code == null || name == null || url == null || resId == null) {
+        if (code == null || name == null || url == null || resId == null || selected == null) {
             //If something fails then complain then just run it again
-            Log.d("Fetch Fragment Saving", "Bundle restore failed")
+            Log.d("Select Fragment Saving", "Bundle restore failed")
             Toast.makeText(context, "Failed to load previous state - fetching again", Toast.LENGTH_SHORT).show()
-            http_bar_fetch.visibility = View.VISIBLE
+            http_bar_select.visibility = View.VISIBLE
             startCourseService(true)
             return
         }
 
         val incomingItems = ArrayList<CourseItem>()
         code.forEachIndexed { i, it ->
-            incomingItems.add(CourseItem(resId[i], name[i], url[i], it))
+            incomingItems.add(CourseItem(resId[i], name[i], url[i], it, selected[i]))
         }
 
         //Load the recycler
@@ -160,8 +134,8 @@ class FetchFragment : Fragment() {
      */
     fun notify(links: List<CourseItem>) {
         //Update the UI on completion of paper fetch
-        if (http_bar_fetch != null) {
-            http_bar_fetch.visibility = View.INVISIBLE
+        if (http_bar_select != null) {
+            http_bar_select.visibility = View.INVISIBLE
         }
         setRecyclerItems(links)
         hasItems = true
@@ -173,9 +147,9 @@ class FetchFragment : Fragment() {
      * @param outState The bundle in which to package any relevant information
      */
     override fun onSaveInstanceState(outState: Bundle) {
-        Log.d("Fetch Fragment Saving", "Creating bundle")
+        Log.d("Select Fragment Saving", "Creating bundle")
         if (adapterItems.isEmpty()) {
-            outState.putString("emptyState", if (http_bar_fetch.visibility == View.VISIBLE) "fetching" else "empty")
+            outState.putString("emptyState", if (http_bar_select.visibility == View.VISIBLE) "fetching" else "empty")
         } else {
             val code = Array(adapterItems.size) {
                 adapterItems[it].courseCode
@@ -189,18 +163,22 @@ class FetchFragment : Fragment() {
             val resId = IntArray(adapterItems.size) {
                 adapterItems[it].imageResource
             }
+            val selected = BooleanArray(adapterItems.size) {
+                adapterItems[it].selected
+            }
 
             outState.putStringArray("courseCodes", code)
             outState.putStringArray("courseNames", name)
             outState.putStringArray("courseUrls", url)
             outState.putIntArray("courseResIds", resId)
+            outState.putBooleanArray("courseSelected", selected)
         }
 
         super.onSaveInstanceState(outState)
     }
 
     /**
-     * Entry point of the [FetchFragment] view.
+     * Entry point of the [SelectFragment] view.
      *
      * @param inflater The inflater to parse the XML
      * @param container The base view that this fragment may be a subview of
@@ -211,38 +189,7 @@ class FetchFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         activity!!.toolbar.title = getString(R.string.app_name)
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_fetch, container, false)
-    }
-
-    /**
-     * Gets a [CourseItem] from a given file, by loading its associated meta file
-     *
-     * @param it The file to generate a [CourseItem] for
-     *
-     * @return A [CourseItem] from the file and meta file, if successful, otherwise null
-     */
-    private fun getCourseItem(it: File) : CourseItem? {
-        try {
-            //We don't need to list the meta files
-            if (it.absolutePath.endsWith(".meta", true)) {
-                return null
-            }
-
-            //Load the meta file for the current file / folder
-            val meta = PDFOperations.loadMetaFile(it.absolutePath) ?: return null
-
-            //Add the course to the course items
-            return CourseItem(
-                PDFOperations.getResourceItem(meta.type),
-                meta.coscName,
-                meta.itemUrl,
-                meta.coscName.toLowerCase(Locale.ROOT)
-            )
-        } catch (e: IOException) {
-            return null
-        } catch (e: FileNotFoundException) {
-            return null
-        }
+        return inflater.inflate(R.layout.fragment_select, container, false)
     }
 
     /**
@@ -256,7 +203,7 @@ class FetchFragment : Fragment() {
         //If we have items from a previous state, then just re-add them here
         //Otherwise, try to restore, or if there is nothing to restore then just re-fetch
         if (savedInstanceState == null) {
-            Log.d("Fetch Activity Created", "Fetching")
+            Log.d("Select Activity Created", "Fetching")
             if (hasItems) {
                 setRecyclerItems(adapterItems)
             } else {
@@ -265,16 +212,18 @@ class FetchFragment : Fragment() {
         }
         else  {
             //Restore state
-            Log.d("Fetch Activity Created", "Restoring from saved state")
+            Log.d("Select Activity Created", "Restoring from saved state")
+
+            //We want to handle restoring state when there are no items
             when (savedInstanceState.getString("emptyState")) {
-                null -> {
+                null -> { //If it's null, we have items
                     restoreState(savedInstanceState)
                 }
-                "fetching" -> {
+                "fetching" -> { //We are still fetching here
                     Log.d("Restoring", "Still fetching")
-                    http_bar_fetch.visibility = View.VISIBLE
+                    http_bar_select.visibility = View.VISIBLE
                 }
-                "empty" -> {
+                "empty" -> { //We have no items
                     setRecyclerItems(adapterItems)
                 }
             }
@@ -288,34 +237,48 @@ class FetchFragment : Fragment() {
      */
     private fun setRecyclerItems(links: List<CourseItem>) {
         adapterItems = links
-        if (recycler_view_fetch == null) {
+        if (recycler_view_select == null) {
             return
         }
         //Create our recycler view adapter and the lambda to handle selection
-        recycler_view_fetch.adapter = CourseItemRecyclerViewAdapter(links) { link -> listItems(link) }
-        recycler_view_fetch.layoutManager = LinearLayoutManager(context)
-        recycler_view_fetch.setHasFixedSize(true)
+        recycler_view_select.adapter = CourseItemRecyclerViewAdapter(links) { link -> setSelected(link) }
+        recycler_view_select.layoutManager = LinearLayoutManager(context)
+        recycler_view_select.setHasFixedSize(true)
     }
 
     /**
-     * Navigates to a [PDFListFragment] which will fetch course sub-folders (lectures, tutorials etc) and PDFs
+     * Creates / deletes the course folder and meta file
      *
      * @param item The course to delve into
      */
-    private fun listItems(item: CourseItem) {
+    private fun setSelected(item: CourseItem) {
+        //Change selected status
+        item.selected = !item.selected
+
         //Want to have it to save into a COSC*** folder, and download from https://cs.otago.ac.nz/cosc***
         val courseFolder = ContextWrapper(context).filesDir.absolutePath + "/" + item.courseCode
-        File(courseFolder).mkdirs()
 
-        //Create the course meta file
-        //Create a "fake" fetch result which corresponds to the course folder, the index.php url, the course code (uppercase when presented), and make sure it's a folder
-        val metaFileFetchResult = FetchResult(courseFolder, item.courseUrl, item.courseCode.toUpperCase(Locale.ROOT), FileNavigatorType.FOLDER)
-        //Save the meta file using the fetch result
-        PDFOperations.createMetaFile(ContextWrapper(context).filesDir.absolutePath, item.courseCode, metaFileFetchResult)
+        //If we've selected, create the folder and meta file
+        if (item.selected) {
+            File(courseFolder).mkdirs()
 
-        //Move to the fragment for listing files etc. Make sure to preserve the listFiles argument
-        val action = FetchFragmentDirections.actionFetchFragmentToPDFListFragment(courseFolder, item.courseCode,  args.listFiles, item.courseCode.toUpperCase(Locale.ROOT))
-        NavHostFragment.findNavController(nav_host_fragment).navigate(action)
+            //Create the course meta file
+            //Create a "fake" fetch result which corresponds to the course folder, the index.php url, the course code (uppercase when presented), and make sure it's a folder
+            val metaFileFetchResult = FetchResult(
+                courseFolder,
+                item.courseUrl,
+                item.courseCode.toUpperCase(Locale.ROOT),
+                FileNavigatorType.FOLDER
+            )
+            //Save the meta file using the fetch result
+            PDFOperations.createMetaFile(
+                ContextWrapper(context).filesDir.absolutePath,
+                item.courseCode,
+                metaFileFetchResult
+            )
+        } else { //If we're unselected then delete the meta file. Keep the other files just in case
+            File("$courseFolder.meta").delete()
+        }
     }
 
     /**
@@ -337,10 +300,10 @@ class FetchFragment : Fragment() {
         /**
          * Starts this service
          *
-         * @param inFragment The instance of [FetchFragment], to call in class functions
+         * @param inFragment The instance of [SelectFragment], to call in class functions
          */
         @Suppress("BlockingMethodInNonBlockingContext") //TODO: Why this is needed here
-        fun startService(inFragment: FetchFragment) {
+        fun startService(inFragment: SelectFragment) {
             coroutineScope.launch {
                 val links = ArrayList<CourseItem>()
                 try {
@@ -361,7 +324,8 @@ class FetchFragment : Fragment() {
                                     R.drawable.ic_folder,
                                     courseName,
                                     courseUrl,
-                                    courseCode
+                                    courseCode,
+                                    File(ContextWrapper(inFragment.context).filesDir.absolutePath + "/$courseCode.meta").exists()
                                 )
                             )
                             Log.d("Added Course", "$courseName with URL $courseUrl")

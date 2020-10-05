@@ -18,11 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package com.otago.open
 
+import android.content.ContextWrapper
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.fragment_first.*
@@ -31,6 +31,10 @@ import kotlinx.android.synthetic.main.fragment_first.*
  * The first navigation fragment the user sees
  */
 class FirstFragment : Fragment() {
+    /**
+     * Whether we have updated the course selection
+     */
+    private var invalidated = false
     /**
      * Entry point of [FirstFragment].
      *
@@ -56,15 +60,18 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         //Go to list view
-        list_items.setOnClickListener {
-            val action = FirstFragmentDirections.actionFirstFragmentToFetchFragment(true)
+        select_items.setOnClickListener {
+            val action = FirstFragmentDirections.actionFirstFragmentToSelectFragment()
             findNavController().navigate(action)
+            invalidated = true;
         }
 
         //Go to fetch view
-        fetch_items.setOnClickListener {
-            val action = FirstFragmentDirections.actionFirstFragmentToFetchFragment(false)
+        list_items.setOnClickListener {
+            //Only list files if we are not invalidated, otherwise fetch
+            val action = FirstFragmentDirections.actionFirstFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath, null, !invalidated, "OpenOtago")
             findNavController().navigate(action)
+            invalidated = false;
         }
     }
 }

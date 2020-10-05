@@ -16,15 +16,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.526"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fetch_items"
+        app:layout_constraintTop_toBottomOf="@+id/select_items"
         app:layout_constraintVertical_bias="0.04" />
 
     <Button
-        android:id="@+id/fetch_items"
+        android:id="@+id/select_items"
         android:layout_width="413dp"
         android:layout_height="95dp"
         android:layout_marginTop="196dp"
-        android:text="@string/fetch_message"
+        android:text="@string/select_message"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +40,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="@string/covid19_notice"
-        app:layout_constraintBottom_toTopOf="@+id/fetch_items"
+        app:layout_constraintBottom_toTopOf="@+id/select_items"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"

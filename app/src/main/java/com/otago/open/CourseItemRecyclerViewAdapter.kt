@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package com.otago.open
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,7 +32,7 @@ import kotlinx.android.synthetic.main.fragment_item.view.*
  * The adapter binds the view holders to their data.
  *
  * @see [CourseItemRecyclerViewAdapter]
- * @see [FetchFragment]
+ * @see [SelectFragment]
  *
  * @param list The list of [CourseItem]s
  * @param listener The function to execute if an course is selected
@@ -55,6 +56,10 @@ class CourseItemRecyclerViewAdapter(
         return ViewHolder(itemView)
     }
 
+    fun setColour(itemView: View, currentItem: CourseItem) {
+        itemView.setBackgroundColor(if (currentItem.selected) Color.parseColor("#bbbbcc") else Color.parseColor("#ffffff"))
+    }
+
     /**
      * Handles the binding of the [ViewHolder] to a [CourseItem]
      *
@@ -64,9 +69,11 @@ class CourseItemRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val currentItem = list[position]
 
-        holder.bind(currentItem)
-        holder.itemView.setOnClickListener { listener(currentItem) }
 
+        holder.bind(currentItem)
+        holder.itemView.setOnClickListener { listener(currentItem); setColour(holder.itemView, currentItem); }
+
+        setColour(holder.itemView, currentItem);
         holder.imageView.setImageResource(currentItem.imageResource)
         holder.textView1.text = currentItem.courseName
         holder.textView2.text = currentItem.courseUrl

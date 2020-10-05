@@ -2,7 +2,7 @@
     <string name="app_name">OpenOtago</string>
 
     <string name="list_message">View Course Items</string>
-    <string name="fetch_message">Download Course Items</string>
+    <string name="select_message">Select Papers</string>
     <string name="covid19_notice">Most papers have returned to normal following the move to COVID-19 Alert Level 1, however a few (like COMP160) are still on Blackboard. Continue to monitor health.govt.nz/covid-19 and covid19.govt.nz</string>
     <string name="listImage">Icon for PDF or Folder</string>
 </resources>

@@ -33,6 +33,7 @@ import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_pdf_list_view.*
 import kotlinx.coroutines.*
 import java.io.*
+import java.util.*
 import kotlin.collections.ArrayList
 
 /**
@@ -213,6 +214,13 @@ class PDFListFragment : Fragment() {
         recycler_view_list.layoutManager = LinearLayoutManager(context)
         recycler_view_list.setHasFixedSize(true)
 
+        //If we're just listing the papers don't allow any form of refresh
+        if (args.paperCode == null) {
+            pdf_list_swipe_refresh.isEnabled = false
+            setRecyclerItems(null) //Load from folder
+            return
+        }
+
         //Try to load the meta file
         val item: FetchResult? = try {
             PDFOperations.loadMetaFile(args.folder)
@@ -222,6 +230,7 @@ class PDFListFragment : Fragment() {
             null
         }
 
+        //If we fail then exit
         if (item == null) {
             //TODO: Something
             Log.d("List Fragment", "Failed to load meta file")
@@ -233,26 +242,30 @@ class PDFListFragment : Fragment() {
             runService(item, false)
         }
 
+        //If we don't have a saved instance state, try first to load any data from a previous state, otherwise just fetch it again
         if (savedInstanceState == null) {
             Log.d("Fetch Activity Created", "Fetching")
-            if (hasItems) {
+            if  (hasItems) {
                 setRecyclerItems(null, adapterItems)
-            } else {
+            }
+            else  {
                 runService(item, true)
             }
         }
-        else  {
+        else  { //Otherwise, try to load the state from the saved instance state
             //Restore state
             Log.d("Fetch Activity Created", "Restoring from saved state")
+
+            //We want to handle restoring state when there are no items
             when (savedInstanceState.getString("emptyState")) {
-                null -> {
+                null -> { //If it's null, we have items
                     restoreState(savedInstanceState)
                 }
-                "fetching" -> {
+                "fetching" -> { //We are still fetching here
                     Log.d("Restoring", "Still fetching")
                     http_bar_pdf_list.visibility = View.VISIBLE
                 }
-                "empty" -> {
+                "empty" -> { //We have no items
                     setRecyclerItems(null, adapterItems)
                 }
             }
@@ -321,10 +334,11 @@ class PDFListFragment : Fragment() {
      */
     private fun getPdfItemFetchResult(it: File): FetchResult? {
         try {
-            if (it.absolutePath.endsWith(".meta")) {
+            //Try to load the meta file corresponding to the input filename
+            if (!it.absolutePath.endsWith(".meta")) {
                 return null
             }
-            return PDFOperations.loadMetaFile(it.absolutePath)
+            return PDFOperations.loadMetaFile(it.absolutePath.substringBeforeLast(".meta"))
         } catch (e: IOException) {
             return null
         } catch (e: FileNotFoundException) {
@@ -386,7 +400,7 @@ class PDFListFragment : Fragment() {
                 //Just go to where the PDFItem tells us
                 val action = PDFListFragmentDirections.actionPDFListFragmentSelf(
                     item.itemFile,
-                    args.paperCode,
+                    args.paperCode ?: item.coscName,
                     args.listFiles,
                     nextNav
                 )

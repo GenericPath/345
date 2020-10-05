@@ -12,8 +12,11 @@
         tools:layout="@layout/fragment_first">
 
         <action
-            android:id="@+id/action_FirstFragment_to_fetchFragment"
-            app:destination="@id/FetchFragment" />
+            android:id="@+id/action_FirstFragment_to_SelectFragment"
+            app:destination="@id/SelectFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_PDFListFragment"
+            app:destination="@id/PDFListFragment" />
     </fragment>
     <fragment
         android:id="@+id/PDFViewFragment"
@@ -45,6 +48,7 @@
 
         <argument
             android:name="paperCode"
+            app:nullable="true"
             app:argType="string" />
 
         <argument
@@ -66,19 +70,10 @@
             app:destination="@id/MarkViewFragment" />
     </fragment>
     <fragment
-        android:id="@+id/FetchFragment"
-        android:name="com.otago.open.FetchFragment"
-        android:label="fragment_fetch"
-        tools:layout="@layout/fragment_fetch" >
-
-        <argument
-            android:name="listFiles"
-            app:argType="boolean" />
-
-        <action
-            android:id="@+id/action_FetchFragment_to_PDFListFragment"
-            app:destination="@id/PDFListFragment" />
-    </fragment>
+        android:id="@+id/SelectFragment"
+        android:name="com.otago.open.SelectFragment"
+        android:label="fragment_select"
+        tools:layout="@layout/fragment_select" />
 
     <fragment
         android:id="@+id/MarkViewFragment"
