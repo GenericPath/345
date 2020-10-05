@@ -94,6 +94,11 @@ class PDFListFragment : Fragment() {
         if (pdfService != null && pdfService!!.isActive) {
             return
         }
+
+        //If we're not refreshing from the swipe down then disable it
+        if (!pdf_list_swipe_refresh.isRefreshing) {
+            pdf_list_swipe_refresh.isEnabled = false
+        }
         Log.d("PDF Service", "Starting")
 
         if (modal) {
@@ -194,7 +199,7 @@ class PDFListFragment : Fragment() {
      */
     fun notify(links: List<PDFItem>) {
         //Update the UI on completion of paper fetch
-        setRecyclerItems(if (http_bar_pdf_list.visibility == View.INVISIBLE) RefreshNotifyType.REFRESH_NONE else RefreshNotifyType.NAV_NONE, links)
+        setRecyclerItems(if (http_bar_pdf_list == null || http_bar_pdf_list.visibility == View.INVISIBLE) RefreshNotifyType.REFRESH_NONE else RefreshNotifyType.NAV_NONE, links)
         if (http_bar_pdf_list != null) {
             http_bar_pdf_list.visibility = View.INVISIBLE
         }
@@ -323,6 +328,8 @@ class PDFListFragment : Fragment() {
         if (pdf_list_swipe_refresh.isRefreshing) {
             pdf_list_swipe_refresh.isRefreshing = false
         }
+
+        pdf_list_swipe_refresh.isEnabled = true
     }
 
     /**

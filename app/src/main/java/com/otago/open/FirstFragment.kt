@@ -20,6 +20,7 @@ package com.otago.open
 
 import android.content.ContextWrapper
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,11 +65,13 @@ class FirstFragment : Fragment() {
             val action = FirstFragmentDirections.actionFirstFragmentToSelectFragment()
             findNavController().navigate(action)
             invalidated = true;
+            Log.d("Select Invalidation Status", invalidated.toString())
         }
 
         //Go to fetch view
         list_items.setOnClickListener {
             //Only list files if we are not invalidated, otherwise fetch
+            Log.d("List Invalidation Status", invalidated.toString())
             val action = FirstFragmentDirections.actionFirstFragmentToPDFListFragment(ContextWrapper(context).filesDir.absolutePath, null, !invalidated, "OpenOtago")
             findNavController().navigate(action)
             invalidated = false;
