@@ -33,7 +33,6 @@ import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_pdf_list_view.*
 import kotlinx.coroutines.*
 import java.io.*
-import java.util.*
 import kotlin.collections.ArrayList
 
 /**
@@ -129,7 +128,7 @@ class PDFListFragment : Fragment() {
             //If something fails then complain then just run it again
             Log.d("List Fragment Saving", "Bundle restore failed")
             Toast.makeText(context, "Failed to load previous state - listing again", Toast.LENGTH_SHORT).show()
-            setRecyclerItems(true)
+            setRecyclerItems(if (args.listFiles) RefreshNotifyType.CACHE_NAV_NONE else RefreshNotifyType.NAV_NONE)
             return
         }
 
@@ -147,7 +146,7 @@ class PDFListFragment : Fragment() {
         }
 
         //Load the recycler
-        setRecyclerItems(null, incomingItems.toList())
+        setRecyclerItems(RefreshNotifyType.NONE, incomingItems.toList())
     }
 
     /**
@@ -195,10 +194,10 @@ class PDFListFragment : Fragment() {
      */
     fun notify(links: List<PDFItem>) {
         //Update the UI on completion of paper fetch
+        setRecyclerItems(if (http_bar_pdf_list.visibility == View.INVISIBLE) RefreshNotifyType.REFRESH_NONE else RefreshNotifyType.NAV_NONE, links)
         if (http_bar_pdf_list != null) {
             http_bar_pdf_list.visibility = View.INVISIBLE
         }
-        setRecyclerItems(args.listFiles, links)
         hasItems = true
     }
 
@@ -217,7 +216,7 @@ class PDFListFragment : Fragment() {
         //If we're just listing the papers don't allow any form of refresh
         if (args.paperCode == null) {
             pdf_list_swipe_refresh.isEnabled = false
-            setRecyclerItems(null) //Load from folder
+            setRecyclerItems(RefreshNotifyType.NAV_PAPERS) //Load from folder
             return
         }
 
@@ -243,13 +242,19 @@ class PDFListFragment : Fragment() {
         }
 
         //If we don't have a saved instance state, try first to load any data from a previous state, otherwise just fetch it again
+        //If we're listing then just list
         if (savedInstanceState == null) {
             Log.d("Fetch Activity Created", "Fetching")
-            if  (hasItems) {
-                setRecyclerItems(null, adapterItems)
-            }
-            else  {
-                runService(item, true)
+            when {
+                hasItems -> {
+                    setRecyclerItems(RefreshNotifyType.NONE, adapterItems)
+                }
+                args.listFiles -> {
+                    setRecyclerItems(RefreshNotifyType.CACHE_NAV_NONE) //Load from folder
+                }
+                else -> {
+                    runService(item, true)
+                }
             }
         }
         else  { //Otherwise, try to load the state from the saved instance state
@@ -266,7 +271,7 @@ class PDFListFragment : Fragment() {
                     http_bar_pdf_list.visibility = View.VISIBLE
                 }
                 "empty" -> { //We have no items
-                    setRecyclerItems(null, adapterItems)
+                    setRecyclerItems(RefreshNotifyType.NONE, adapterItems)
                 }
             }
         }
@@ -278,7 +283,7 @@ class PDFListFragment : Fragment() {
      * @param cacheMessage - Whether to send a toast about having no files present in the cache or about no files at all
      */
     @Suppress("SameParameterValue") //TODO: Check this - needed to make the warning go away but the warning doesn't seem to be true?
-    private fun setRecyclerItems(cacheMessage: Boolean?) {
+    private fun setRecyclerItems(cacheMessage: RefreshNotifyType) {
         //Generate the file list
         setRecyclerItems(cacheMessage, generateFolderList(args.folder))
     }
@@ -289,7 +294,7 @@ class PDFListFragment : Fragment() {
      * @param cacheMessage - Whether to send a toast about having no files present
      * @param list - The [PDFItem]s to add
      */
-    private fun setRecyclerItems(cacheMessage: Boolean?, list: List<PDFItem>) {
+    private fun setRecyclerItems(cacheMessage: RefreshNotifyType, list: List<PDFItem>) {
         //If we are called from a coroutine which is running with a destroyed fragment
         //e.g. from after navigation we don't want to do anything here
         if (recycler_view_list == null) {
@@ -299,13 +304,8 @@ class PDFListFragment : Fragment() {
         adapterItems = list
 
         //Only send the message if we want to
-        if (list.isEmpty() && cacheMessage != null) {
-            if (cacheMessage)
-            {
-                Toast.makeText(context, "No content downloaded yet", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "No content yet", Toast.LENGTH_SHORT).show()
-            }
+        if (list.isEmpty()) {
+            Toast.makeText(context, cacheMessage.message, Toast.LENGTH_SHORT).show()
         }
 
         //Preserve the view state (i.e. the scroll position)

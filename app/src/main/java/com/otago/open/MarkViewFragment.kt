@@ -82,6 +82,19 @@ class MarkViewFragment : Fragment() {
     }
 
     /**
+     * Handles saving the instance state of this fragment e.g. when rotating the screen
+     *
+     * @param outState The output state bundle
+     */
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        mark_view.saveState(outState)
+
+        //If the progress bar is gone we're visible
+        outState.putBoolean("loaded", http_bar_mark.visibility == View.INVISIBLE)
+    }
+
+    /**
      * Handles the creation of the views.
      * Displays the marks
      *
@@ -163,6 +176,16 @@ class MarkViewFragment : Fragment() {
                 //No questions please
                 view.loadUrl("javascript:($javaScript)()")
             }
+        }
+
+        //Load the data after we've configured all of the JS cruft
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean("loaded")) {
+                mark_view.visibility = View.VISIBLE
+                http_bar_mark.visibility = View.INVISIBLE
+            }
+            mark_view.restoreState(savedInstanceState)
+            return
         }
 
         mark_view.loadUrl(args.postUrl)

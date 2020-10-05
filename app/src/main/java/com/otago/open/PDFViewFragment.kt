@@ -45,6 +45,8 @@ class PDFViewFragment : Fragment() {
      */
     private val args : PDFViewFragmentArgs by navArgs()
 
+    private var filePath : File? = null
+
     /**
      * Entry point of [PDFViewFragment]
      *
@@ -70,6 +72,7 @@ class PDFViewFragment : Fragment() {
         //TODO: Figure out why load() never throws an exception on the current thread
         try {
             Log.d("View PDF", file.absolutePath)
+            filePath = file
             pdfView.fromFile(file).load()
         } catch (e : IOException) {
             //If it fails send a toast and go back
@@ -79,6 +82,19 @@ class PDFViewFragment : Fragment() {
         }
 
         pdfView.visibility = View.VISIBLE
+    }
+
+    /**
+     * Handles saving the instance state of this fragment e.g. when rotating the screen
+     *
+     * @param outState The output state bundle
+     */
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("loaded", http_bar_pdf_view.visibility == View.INVISIBLE);
+        if (filePath != null) {
+            outState.putString("loadFile", filePath!!.absolutePath)
+        }
     }
 
     /**
@@ -106,6 +122,16 @@ class PDFViewFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         activity!!.toolbar.title = args.navName
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean("loaded")) {
+                http_bar_pdf_view.visibility = View.INVISIBLE
+                val path = savedInstanceState.getString("loadFile");
+                if (path != null) {
+                    showPdf(File(path), pdf_view)
+                }
+            }
+        }
 
         //Parse the filename into a File
         val file = File(args.pdfFileName)
