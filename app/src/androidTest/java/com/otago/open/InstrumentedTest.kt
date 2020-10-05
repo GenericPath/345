@@ -109,7 +109,7 @@ class InstrumentedTest {
         var activity: Activity? = null
         actRule.scenario.onActivity { activity = it }
 
-        val sleepTime: Long = 500
+        val sleepTime: Long = 1000
 
         onView(withId(R.id.textView)).check(matches(isDisplayed()))
             .check(matches(withText(R.string.covid19_notice)))
@@ -244,6 +244,7 @@ class InstrumentedTest {
                 click()
             )
         )
+
         Thread.sleep(sleepTime)
 
         activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
