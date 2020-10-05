@@ -1,0 +1,9 @@
+OpenOtago allows you to view course information such as lectures slides, marks and more for University of Otago 
+courses.
+
+See https://github.com/GenericPath/345 for the source code.
+
+Created by
+    Damian Soo
+    Garth Wales
+    Louis Whitburn

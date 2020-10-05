@@ -1,0 +1,1 @@
+OpenOtago is an android replacement to Univeristy of Otago's online resources.
