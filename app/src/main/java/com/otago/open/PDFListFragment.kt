@@ -92,13 +92,14 @@ class PDFListFragment : Fragment() {
      */
     private fun runService(item: FetchResult, modal: Boolean) {
         if (pdfService != null && pdfService!!.isActive) {
+            Log.d("PDF Service", "Cancelling before start")
+            if (pdf_list_swipe_refresh != null) {
+                Log.d("PDF Service", "Re-enabling pull down")
+                pdf_list_swipe_refresh.isRefreshing = false
+            }
             return
         }
 
-        //If we're not refreshing from the swipe down then disable it
-        if (!pdf_list_swipe_refresh.isRefreshing) {
-            pdf_list_swipe_refresh.isEnabled = false
-        }
         Log.d("PDF Service", "Starting")
 
         if (modal) {
@@ -250,6 +251,8 @@ class PDFListFragment : Fragment() {
 
         //Set pull down listener
         pdf_list_swipe_refresh.setOnRefreshListener {
+            Log.d("Refresh Pulldown", "Starting?")
+            //runService handles if the service is running
             runService(item, false)
         }
 
@@ -332,10 +335,9 @@ class PDFListFragment : Fragment() {
 
         //If we came here from a refresh operation then make sure to note that we're done
         if (pdf_list_swipe_refresh.isRefreshing) {
+            Log.d("Refresh Pulldown", "Stopping refresh")
             pdf_list_swipe_refresh.isRefreshing = false
         }
-
-        pdf_list_swipe_refresh.isEnabled = true
     }
 
     /**

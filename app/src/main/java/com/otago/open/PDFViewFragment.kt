@@ -106,7 +106,8 @@ class PDFViewFragment : Fragment() {
     private fun showPdf(url: String, pdfView: PDFView) {
         Log.d("View PDF (URL)", url)
 
-        this.http_bar_pdf_view.visibility = View.VISIBLE
+        http_bar_pdf_view.visibility = View.VISIBLE
+        pdfView.visibility = View.INVISIBLE
 
         TempService.startService(url, ContextWrapper(context).cacheDir.absolutePath, "view.pdf", this, pdfView)
     }
