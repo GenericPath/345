@@ -68,6 +68,10 @@ class UnitTest {
             PDFItem(R.drawable.ic_folder, FileNavigatorType.FOLDER, "testFolderUrlFetch/tutorials.php", "https://cs.otago.ac.nz/cosc242/tutorials.php", "Tutorials")
         )
         assertEquals(fetchResult, fetchList)
+        if (fetchResult == null) {
+            assertEquals(true, false)
+            return
+        }
         assertEquals(PDFOperations.generatePdfItems(fetchResult), pdfList)
     }
 
@@ -77,6 +81,12 @@ class UnitTest {
     @Test
     fun checkUrlFetchPdf() {
         val fetchResult = PDFOperations.fetchLinks("testFolderPdfFetch", "https://cs.otago.ac.nz/cosc244/lectures.php", false)
+
+        if (fetchResult == null) {
+            assertEquals(true, false)
+            return
+        }
+
         val pdfResult = PDFOperations.generatePdfItems(listOf (fetchResult[0], fetchResult[1])) //Don't test stuff that isn't checked
 
         val fetchList = listOf(
