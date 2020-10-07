@@ -73,7 +73,7 @@ class CourseItemRecyclerViewAdapter(
         holder.bind(currentItem)
         holder.itemView.setOnClickListener { listener(currentItem); setColour(holder.itemView, currentItem); }
 
-        setColour(holder.itemView, currentItem);
+        setColour(holder.itemView, currentItem)
         holder.imageView.setImageResource(currentItem.imageResource)
         holder.textView1.text = currentItem.courseName
         holder.textView2.text = currentItem.courseUrl

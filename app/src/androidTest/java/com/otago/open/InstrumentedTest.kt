@@ -153,7 +153,7 @@ class InstrumentedTest {
                 onView(withId(R.id.http_bar_pdf_list)).check(matches(isDisplayed()))
                 Thread.sleep(sleepTime)
             }
-            } catch (e: AssertionFailedError) {}
+        } catch (e: AssertionFailedError) {}
 
         activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         Thread.sleep(sleepTime)

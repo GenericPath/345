@@ -197,7 +197,14 @@ class PDFListFragment : Fragment() {
      *
      * @param links The items to add
      */
-    fun notify(links: List<PDFItem>) {
+    fun notify(links: List<PDFItem>?) {
+        if (links == null) {
+            Toast.makeText(context, "Failed to fetch links - try refreshing", Toast.LENGTH_SHORT).show()
+            setRecyclerItems(RefreshNotifyType.NONE, emptyList())
+            hasItems = true
+            return
+        }
+
         //Update the UI on completion of paper fetch
         setRecyclerItems(if (http_bar_pdf_list == null || http_bar_pdf_list.visibility == View.INVISIBLE) RefreshNotifyType.REFRESH_NONE else RefreshNotifyType.NAV_NONE, links)
         if (http_bar_pdf_list != null) {
@@ -236,8 +243,8 @@ class PDFListFragment : Fragment() {
 
         //If we fail then exit
         if (item == null) {
-            //TODO: Something
-            Log.d("List Fragment", "Failed to load meta file")
+            Toast.makeText(context, "Couldn't load file list", Toast.LENGTH_SHORT).show()
+            fragmentManager?.popBackStack()
             return
         }
 
@@ -287,7 +294,6 @@ class PDFListFragment : Fragment() {
      *
      * @param cacheMessage - Whether to send a toast about having no files present in the cache or about no files at all
      */
-    @Suppress("SameParameterValue") //TODO: Check this - needed to make the warning go away but the warning doesn't seem to be true?
     private fun setRecyclerItems(cacheMessage: RefreshNotifyType) {
         //Generate the file list
         setRecyclerItems(cacheMessage, generateFolderList(args.folder))
@@ -346,12 +352,11 @@ class PDFListFragment : Fragment() {
                 return null
             }
             return PDFOperations.loadMetaFile(it.absolutePath.substringBeforeLast(".meta"))
-        } catch (e: IOException) {
+        } catch (e: IOException) { //Silently ignore errors - the user can just refresh if something's missing
             return null
         } catch (e: FileNotFoundException) {
             return null
         }
-
     }
 
     /**
@@ -374,7 +379,6 @@ class PDFListFragment : Fragment() {
         files?.forEach {
             val item = getPdfItemFetchResult(it)
 
-            //TODO: Handle null (something)
             if (item != null) {
                 result.add(item)
             }
@@ -415,7 +419,7 @@ class PDFListFragment : Fragment() {
             }
             FileNavigatorType.MARKS -> {
                 //For the marks we want to go to the marks fragment
-                Log.d("Mark View POST", item.itemUrl)
+                Log.d("Mark View GET", item.itemUrl)
                 NavHostFragment.findNavController(nav_host_fragment).navigate(PDFListFragmentDirections.actionPDFListFragmentToMarkViewFragment(item.itemUrl, nextNav))
             }
         }
@@ -456,6 +460,12 @@ class PDFListFragment : Fragment() {
             coroutineScope.launch {
                 //Fetch the links
                 val fetchedLinks = PDFOperations.fetchLinks(parentFolder, url, doFolders)
+
+                if (fetchedLinks == null) {
+                    inFragment.notify(null)
+                    return@launch
+                }
+
                 val pdfs = PDFOperations.generatePdfItems(fetchedLinks)
 
                 withContext(Dispatchers.Main) {
@@ -466,10 +476,22 @@ class PDFListFragment : Fragment() {
                     inFragment.notify(pdfs)
                 }
 
+                var allOk = true
+
                 //If we do have links, download them
                 if (fetchedLinks.size > 0) {
                     fetchedLinks.forEach {
-                        PDFOperations.downloadPDF(it)
+                        if (PDFOperations.downloadPDF(it) == null) {
+                            allOk = false
+                        }
+                    }
+                }
+
+                //If some PDFs don't download then notify the user but otherwise ignore them
+                if (!allOk) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(inFragment.context, "Some PDFs failed to download", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
             }

@@ -132,7 +132,14 @@ class SelectFragment : Fragment() {
      *
      * @param links The items to add
      */
-    fun notify(links: List<CourseItem>) {
+    fun notify(links: List<CourseItem>?) {
+        if (links == null) {
+            Toast.makeText(context, "Failed to fetch links - try refreshing", Toast.LENGTH_SHORT).show()
+            setRecyclerItems(emptyList())
+            hasItems = true
+            return
+        }
+
         //Update the UI on completion of paper fetch
         if (http_bar_select != null) {
             http_bar_select.visibility = View.INVISIBLE
@@ -332,20 +339,30 @@ class SelectFragment : Fragment() {
                         }
                     }
                 } catch (e: MalformedURLException) {
-                    //TODO: Do something here
-                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        inFragment.notify(null)
+                    }
+                    return@launch
                 } catch (e: HttpStatusException) {
-                    //TODO: Do something here
-                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        inFragment.notify(null)
+                    }
+                    return@launch
                 } catch (e: UnsupportedMimeTypeException) {
-                    //TODO: Do something here
-                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        inFragment.notify(null)
+                    }
+                    return@launch
                 } catch (e: SocketTimeoutException) {
-                    //TODO: Do something here
-                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        inFragment.notify(null)
+                    }
+                    return@launch
                 } catch (e: IOException) {
-                    //TODO: Do something here
-                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        inFragment.notify(null)
+                    }
+                    return@launch
                 }
 
                 withContext(Dispatchers.Main) {

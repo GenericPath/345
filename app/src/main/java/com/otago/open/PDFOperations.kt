@@ -46,7 +46,7 @@ object PDFOperations {
         return when (navType) {
             FileNavigatorType.FOLDER -> R.drawable.ic_folder
             FileNavigatorType.PDF -> R.drawable.ic_pdf
-            FileNavigatorType.MARKS -> R.drawable.ic_thumb //TODO: New icon
+            FileNavigatorType.MARKS -> R.drawable.ic_thumb
         }
     }
 
@@ -221,8 +221,6 @@ object PDFOperations {
         try {
             outFile.createNewFile()
         } catch (e: IOException) {
-            //TODO: Something here
-            e.printStackTrace()
             return null
         }
 
@@ -254,12 +252,8 @@ object PDFOperations {
             Log.d("Successfully Saved", "$parentDir/$fileName")
             return "$parentDir/$fileName"
         } catch (e: FileNotFoundException) {
-            //TODO: Something here
-            e.printStackTrace()
             return null
         } catch (e: IOException) {
-            //TODO: Something here
-            e.printStackTrace()
             return null
         }
     }
@@ -389,7 +383,7 @@ object PDFOperations {
      *
      * @return The list of [FetchResult]s for each PDF (or folder if [doFolders] is true) on the page
      */
-    fun fetchLinks(parentFolder: String, url: String, doFolders: Boolean): ArrayList<FetchResult> {
+    fun fetchLinks(parentFolder: String, url: String, doFolders: Boolean): ArrayList<FetchResult>? {
         val links = ArrayList<FetchResult>()
         Log.d("Jsoup URL", url)
 
@@ -405,20 +399,15 @@ object PDFOperations {
             }
 
         } catch (e: MalformedURLException) {
-            //TODO: Do something here
-            e.printStackTrace()
+            return null
         } catch (e: HttpStatusException) {
-            //TODO: Do something here
-            e.printStackTrace()
+            return null
         } catch (e: UnsupportedMimeTypeException) {
-            //TODO: Do something here
-            e.printStackTrace()
+            return null
         } catch (e: SocketTimeoutException) {
-            //TODO: Do something here
-            e.printStackTrace()
+            return null
         } catch (e: IOException) {
-            //TODO: Do something here
-            e.printStackTrace()
+            return null
         }
 
         return links
@@ -428,8 +417,10 @@ object PDFOperations {
      * Downloads a PDF using the [downloadFile] logic.
      *
      * @param pdfFile The [FetchResult] corresponding to the PDF to download
+     *
+     * @return The location that the PDF was downloaded to
      */
-    fun downloadPDF(pdfFile: FetchResult) {
+    fun downloadPDF(pdfFile: FetchResult): String? {
         //Common stuff good to know
         val parentDir = pdfFile.itemFile.substringBeforeLast('/', "")
         val fileName = pdfFile.itemFile.substringAfterLast('/', "")
@@ -443,20 +434,16 @@ object PDFOperations {
                 createMetaFile(parentDir, fileName, pdfFile)
 
             } catch (e: FileNotFoundException) {
-                //TODO: Something here
-                e.printStackTrace()
-                return
+                return null
             } catch (e: IOException) {
-                //TODO: Something here
-                e.printStackTrace()
-                return
+                return null
             }
-            return
+            return fileName
         }
 
         //Sanitise input - in case of a blank href
         if (pdfFile.itemUrl.isBlank()) {
-            return
+            return fileName
         }
 
         val outFile = downloadFile(pdfFile.itemUrl, parentDir, fileName)
@@ -465,5 +452,7 @@ object PDFOperations {
             Log.d("Creating Download Meta-File", outFile)
             createMetaFile(outFile, pdfFile)
         }
+
+        return fileName
     }
 }

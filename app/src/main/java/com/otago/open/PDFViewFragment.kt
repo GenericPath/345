@@ -69,17 +69,17 @@ class PDFViewFragment : Fragment() {
      */
     private fun showPdf(file: File, pdfView: PDFView) {
         //Displays a PDF
-        //TODO: Figure out why load() never throws an exception on the current thread
-        try {
-            Log.d("View PDF", file.absolutePath)
-            filePath = file
-            pdfView.fromFile(file).load()
-        } catch (e : IOException) {
-            //If it fails send a toast and go back
+        Log.d("View PDF", file.absolutePath)
+        filePath = file
+
+        val pdfConfig = pdfView.fromFile(file)
+
+        pdfConfig.onError { //If it fails send a toast and go back
             Toast.makeText(context, "Couldn't load PDF", Toast.LENGTH_SHORT).show()
-            activity?.finish()
-            return
+            fragmentManager?.popBackStack()
         }
+
+        pdfConfig.load()
 
         pdfView.visibility = View.VISIBLE
     }
@@ -91,7 +91,7 @@ class PDFViewFragment : Fragment() {
      */
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean("loaded", http_bar_pdf_view.visibility == View.INVISIBLE);
+        outState.putBoolean("loaded", http_bar_pdf_view.visibility == View.INVISIBLE)
         if (filePath != null) {
             outState.putString("loadFile", filePath!!.absolutePath)
         }
@@ -126,7 +126,7 @@ class PDFViewFragment : Fragment() {
         if (savedInstanceState != null) {
             if (savedInstanceState.getBoolean("loaded")) {
                 http_bar_pdf_view.visibility = View.INVISIBLE
-                val path = savedInstanceState.getString("loadFile");
+                val path = savedInstanceState.getString("loadFile")
                 if (path != null) {
                     showPdf(File(path), pdf_view)
                 }
@@ -148,8 +148,8 @@ class PDFViewFragment : Fragment() {
             }
             //Otherwise fail?
             else -> {
-                Toast.makeText(context, "Could not load PDF from cache or website?", Toast.LENGTH_SHORT).show()
-                activity?.finish()
+                Toast.makeText(context, "Could not load PDF from cache or website", Toast.LENGTH_SHORT).show()
+                fragmentManager?.popBackStack()
             }
         }
     }
