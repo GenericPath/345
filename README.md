@@ -2,12 +2,38 @@
 
 ![Tests](https://github.com/GenericPath/345/workflows/Tests/badge.svg) ![Build](https://github.com/GenericPath/345/workflows/Build/badge.svg) [![Documentation](https://github.com/GenericPath/345/workflows/Documentation/badge.svg)](https://zyviax.github.io/345Documentation/app/index.html) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/69862f4fa1f84105979181bf83eb4340)](https://www.codacy.com/manual/garth.dhnz/345?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GenericPath/345&amp;utm_campaign=Badge_Grade) [![codecov](https://codecov.io/gh/GenericPath/345/branch/master/graph/badge.svg)](https://codecov.io/gh/GenericPath/345)
 
+
+---
 ### OpenOtago is an android replacement to Univeristy of Otago\'s online resources
 
 Created by
 -   Damian Soo (6551336)
 -   Garth Wales (4861462)
 -   Louis Whitburn (2548261)
+
+---
+## **User documentation**
+
+## Latest version: v1.0
+## App store status: <a href="https://gitlab.com/fdroid/rfp/-/issues/1511">SUBMITTED</a>
+
+
+<table>
+<tr>
+    <td>See <a href="https://github.com/GenericPath/345/blob/master/fastlane/metadata/android/en-US/full_description.txt">full description</a></td>
+</tr>
+
+<tr>
+    <td>See <a href="https://github.com/GenericPath/345/tree/master/fastlane/metadata/android/en-US/images">screenshots</a></td>
+</tr>
+</table>
+
+### If you wish to submit a bug or have an issue please drop a message <a href="https://github.com/GenericPath/345/issues">here</a>
+
+---
+App stores pull description, images and changelogs from directory <a href="https://github.com/GenericPath/345/tree/master/fastlane/metadata/android/en-US">fastlane/metadata/android/en-US</a>
+
+If commiting changes to user documentation see <a href=https://gitlab.com/snippets/1895688>explanation</a>
 
 ---
 ## **Commiting Code**
@@ -33,17 +59,6 @@ Each commit runs the pipelines found in ```.github/workflows/```
 All known issues are tracked with <a href="https://github.com/GenericPath/345/issues">github issues</a>
 
 ---
-## ***Beta release***
-
-This release focuses on improving the underlying systems to pull and show content dynamically. This allows us to show any type of page such as PDFs, marks, or general course information.
-
-Instrumentation testing has been implemented to simulate and test key functionalities. We have also furthered coverage in unit tests.
-
-### Goals for Final Release
--   Redo UI (e.g. allow users to select courses to follow)
--   Improve error handling
--   Implement MATH/STAT support
-
 ### Requirements to build
 -   Java Environment
 -   Android SDK version 29

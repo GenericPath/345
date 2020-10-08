@@ -7,4 +7,4 @@ Select your papers to
 
 All lecture slides you visit are saved locally, for convenient offline access!
 
-See https://github.com/GenericPath/345 for more.
+If you have suggestions, bugs, need help or wish to contribute see https://github.com/GenericPath/345 for more.
