@@ -15,7 +15,7 @@ Created by
 ## **User documentation**
 
 ### Latest version: v1.0
-### App store status: <a href="https://gitlab.com/fdroid/rfp/-/issues/1511">SUBMITTED</a>
+### App store: <a href="https://f-droid.org/en/packages/com.otago.open/">F-Droid</a>
 
 
 <table>
